@@ -1,0 +1,42 @@
+feature_info:
+    feature_dir: '/data/zolab/edw_cohort_data/bwh_ed_2010_2015/features/2018_05_14/'
+    count_files: 'dia--ed_enc--enc--lab--lvs--med--prc'
+    non_count_files: 'dem'
+    missingness_threshold_count: 0.01
+    missingness_threshold_non_count: 0.01
+    ecg_filepath: '/data/zolab/stressed_ensemble/data/ecg_feats/ecg_int_hats.rds'
+    use_ecg_feats: FALSE
+
+cohort_info:
+    cohort_filepath: '/data/zolab/general_ml_pipeline/cohort_data/joint_outcome.csv'
+    unit_id: 'ed_enc_id'
+    cluster_id: 'ptid'
+
+modeling_info:
+    splits: 'full--untested--tested'
+    values: '0--1--1'
+    outcomes: 'joint_outcome--mace--int'
+    names: 'joint_outcome--untested_mace--tested_int'
+    model_types: 'gbt--lasso--lasso'
+
+    train_prop: 0.8
+    ensemble_train_prop: 0.03
+
+    ensemble_outcome: 'int'
+    ensemble_performance_split: 'tested'
+    ensemble_performance_split_value: '1'
+
+pipeline_directories:
+    data_dir: '/data/zolab/general_ml_pipeline_snakemake/data/'
+    model_dir: '/data/zolab/general_ml_pipeline_snakemake/models/'
+    output_dir: '/data/zolab/general_ml_pipeline_snakemake/output/'
+
+xgboost:
+    learning_rate: 0.05
+    obj: 'binary:logistic'
+    scale_pos_weight: 0.10
+    eval_metric: 'auc'
+    max_depth: 6
+    nround: 500
+    colsample_bytree: 0.75
+    seed: 1

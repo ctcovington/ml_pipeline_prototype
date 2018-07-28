@@ -1,0 +1,5 @@
+.snakemake*
+.R*
+
+snakemake-tutorial
+data
