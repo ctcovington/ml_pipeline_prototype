@@ -2,3 +2,4 @@
 scripts/*.Rout
 data
 models
+output
