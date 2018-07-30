@@ -1,5 +1,4 @@
-.snakemake*
-.R*
-
-snakemake-tutorial
+.snakemake
+scripts/*.Rout
 data
+models
