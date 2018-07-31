@@ -1,0 +1,23 @@
+{
+    "__default__" :
+    {
+        "queue"     : "big",
+        "memory"    : 20000,
+        "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\"",
+        "name"      : "{rule}_{wildcards}",
+        "output"    : "logs/cluster/{rule}.{wildcards}.out",
+        "error"     : "logs/cluster/{rule}.{wildcards}.err"
+    },
+
+    "subset_save" :
+    {
+        "memory"    : 5000,
+        "resources" : "\"select[mem>5000] rusage[mem=5000] span[hosts=1]\"",
+    },
+
+    "create_models" :
+    {
+        "memory"    : 80000,
+        "resources" : "\"select[mem>80000] rusage[mem=80000] span[hosts=1]\"",
+    }
+}
