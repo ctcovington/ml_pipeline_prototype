@@ -67,6 +67,7 @@ outputROC <- function(dt, prediction_col_name, ensemble_outcome, ensemble_perfor
     # }
 
     # plot ROC
+    options(device = 'png')
     plt <- ggplot(data = roc_dt, aes(x = fpr, y = tpr)) +
                   geom_line(color = 'red') +
                   geom_abline(intercept = 0, slope = 1) +
@@ -74,7 +75,7 @@ outputROC <- function(dt, prediction_col_name, ensemble_outcome, ensemble_perfor
                   ylim(0,1) +
                   annotate(geom = 'text',  x = 1, y = 0, label = sprintf('AUC: %s', as.character(round(auc, 3))), vjust=1, hjust=1) +
                   labs(title = 'ROC', x = 'False Positive Rate', y = 'True Positive Rate')
-    ggsave(sprintf('%sensemble_roc.png', output_dir), plt)
+    ggsave(filename = sprintf('%sensemble_roc.png', output_dir), device = 'png', width = 7, height = 7)
 }
 
 meanYByYHatQuantile <- function(dt, prediction_col_name, ensemble_outcome, ensemble_performance_split, ensemble_performance_split_value, quantile_vals, quantile_names) {
