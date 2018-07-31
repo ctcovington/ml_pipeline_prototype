@@ -1,5 +1,7 @@
 .snakemake
 *.pdf
+*.svg
+*.log
 scripts/*.Rout
 data
 models
