@@ -6,3 +6,4 @@ scripts/*.Rout
 data
 models
 output
+cohort_data
