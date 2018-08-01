@@ -1,4 +1,4 @@
-source('/data/zolab/general_ml_pipeline_snakemake/scripts/util.R')
+source('util.R')
 
 package_list <- list('devtools', 'data.table')
 
