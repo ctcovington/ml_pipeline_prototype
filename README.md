@@ -18,7 +18,7 @@ Once this has been done, there are some things that could be useful for someone 
 
 - [ ] Add various capabilities/details to training set generation (e.g. allow for up/downsampling of some group)
 - [ ] Add more model diagnostics/analysis
-- [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud) 
+- [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
 
 <hr>
 
@@ -46,12 +46,14 @@ cd <directory_where_you_want_project>
 git clone git@gitlab.com:labsysmed/zolab-projects/ml_pipeline.git ./
 ```
 
-Then, edit the `config.yaml` and `cluster.json` as necessary.
+Then, edit the `config.yaml` and `cluster.json` as necessary. `config.yaml` will certainly need to be edited with the parameters for your project. `cluster.json` may be fine as is -- you should edit if you are not working on an lsf cluster (i.e. one where you can submit jobs with `bsub`), or if you believe you will need different amounts of RAM from what is specified in the configuration file.
 
 Finally, you should be able to run the entire pipeline with a single command:
 
 ```console
 bash run_pipeline.sh
 ```
+
+This will load the appropriate conda environment and run the pipeline (specifically, it will submit batch jobs for each rule defined in `Snakefile`). 
 
 <hr>
