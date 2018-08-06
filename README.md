@@ -6,7 +6,6 @@ Repository for machine learning pipeline code
 ## Table of Contents
 1. [Project Overview](#Project_Overview)
 2. [File Structure](#Directory_Structure)
-3. [Parameters](#Parameters)
 3. [Running the Pipeline](#Running_the_Pipeline)
 
 <hr>
@@ -23,11 +22,6 @@ Broadly speaking, the pipeline takes a cohort and associated features, builds an
 - `run_pipeline.sh`: bash script that runs pipeline
 - `Snakefile`: snakemake file that specifies rules (tasks to be completed)
 - `scripts/`: contains all the R code that actually makes up the pipeline
-
-<hr>
-
-### Parameters <a name='Parameters'></a>
-
 
 <hr>
 
