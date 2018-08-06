@@ -4,7 +4,7 @@ import glob
 import yaml
 
 # create name of log file and reset it if it exists
-logfile = 'pipeline.log'
+logfile = os.path.join(os.getcwd(), 'pipeline.log')
 if os.path.exists(logfile):
     os.remove(logfile)
 
@@ -67,8 +67,10 @@ rule post_modeling_analysis:
         logfile
     shell:
         """
+        cd scripts
         printf "perform post-modeling analysis\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value}" scripts/06_post_modeling_analysis.R scripts/06_post_modeling_analysis.Rout
+        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value}" 06_post_modeling_analysis.R 06_post_modeling_analysis.Rout
+        cd ..
         """
 
 rule create_ensemble_model:
@@ -87,8 +89,10 @@ rule create_ensemble_model:
         logfile
     shell:
         """
+        cd scripts
         printf "create ensemble model and predict outcome\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir}" scripts/05_create_ensemble_model.R scripts/05_create_ensemble_model.Rout
+        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir}" 05_create_ensemble_model.R 05_create_ensemble_model.Rout
+        cd ..
         """
 
 rule create_models:
@@ -120,8 +124,10 @@ rule create_models:
         logfile
     shell:
         """
+        cd scripts
         printf "create models and predict outcomes\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.splits} {params.outcomes} {params.names} {params.model_types} {params.data_dir} {params.model_dir} {params.unit_id} {params.cluster_id} {params.learning_rate} {params.obj} {params.scale_pos_weight} {params.eval_metric} {params.max_depth} {params.nround} {params.colsample_bytree} {params.seed}" scripts/04_create_models.R scripts/04_create_models.Rout
+        R CMD BATCH --no-save --no-restore "--args {params.splits} {params.outcomes} {params.names} {params.model_types} {params.data_dir} {params.model_dir} {params.unit_id} {params.cluster_id} {params.learning_rate} {params.obj} {params.scale_pos_weight} {params.eval_metric} {params.max_depth} {params.nround} {params.colsample_bytree} {params.seed}" 04_create_models.R 04_create_models.Rout
+        cd ..
         """
 
 rule create_modeling_data:
@@ -149,8 +155,10 @@ rule create_modeling_data:
         logfile
     shell:
         """
+        cd scripts
         printf "creating modeling data\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.cohort_filepath} {params.splits} {params.values} {params.outcomes} {params.names} {params.ecg_filepath} {params.use_ecg_feats} {params.train_prop} {params.ensemble_train_prop} {params.data_dir} {params.unit_id} {params.cluster_id}" scripts/03_create_modeling_data.R scripts/03_create_modeling_data.Rout
+        R CMD BATCH --no-save --no-restore "--args {params.cohort_filepath} {params.splits} {params.values} {params.outcomes} {params.names} {params.ecg_filepath} {params.use_ecg_feats} {params.train_prop} {params.ensemble_train_prop} {params.data_dir} {params.unit_id} {params.cluster_id}" 03_create_modeling_data.R 03_create_modeling_data.Rout
+        cd ..
         """
 
 rule merge_subsets:
@@ -165,8 +173,10 @@ rule merge_subsets:
         logfile
     shell:
         """
+        cd scripts
         printf "merging together all subset files\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.data_dir} {params.unit_id}" scripts/02_merge_subsets.R scripts/02_merge_subsets.Rout
+        R CMD BATCH --no-save --no-restore "--args {params.data_dir} {params.unit_id}" 02_merge_subsets.R 02_merge_subsets.Rout
+        cd ..
         """
 
 rule subset_save:
@@ -186,8 +196,10 @@ rule subset_save:
         logfile
     shell:
         """
+        cd scripts
         for file in {input.files}; do
              printf "subsetting and saving $(basename $file)\n" >> {log}
-             R CMD BATCH --no-save --no-restore "--args $(basename $file) {params.feature_dir} {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count}" scripts/01_subset_save.R scripts/01_subset_save.Rout
+             R CMD BATCH --no-save --no-restore "--args $(basename $file) {params.feature_dir} {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count}" 01_subset_save.R 01_subset_save.Rout
         done
+        cd ..
         """

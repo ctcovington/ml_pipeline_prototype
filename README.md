@@ -38,6 +38,4 @@ You can (hopefully) run the entire pipeline with a single command:
 bash run_pipeline.sh
 ```
 
-Inside the 
-
 <hr>
