@@ -6,7 +6,7 @@ Repository for machine learning pipeline code
 ## Table of Contents
 0. [State of the Project](#State_of_the_Project)
 1. [Project Overview](#Project_Overview)
-2. [File Structure](#Directory_Structure)
+2. [File Structure](#Directory_Structure).p
 3. [Running the Pipeline](#Running_the_Pipeline)
 
 <hr>
@@ -54,6 +54,6 @@ Finally, you should be able to run the entire pipeline with a single command:
 bash run_pipeline.sh
 ```
 
-This will load the appropriate conda environment and run the pipeline (specifically, it will submit batch jobs for each rule defined in `Snakefile`). 
+This will load the appropriate conda environment and run the pipeline (specifically, it will submit batch jobs for each rule defined in `Snakefile`).
 
 <hr>
