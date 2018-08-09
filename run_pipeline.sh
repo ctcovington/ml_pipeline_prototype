@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # either create or load conda environment
-if conda info --envs | grep -q "ml_pipeline"; then
-    source activate "ml_pipeline"
-else
+if ! conda info --envs | grep -q "ml_pipeline"; then
     conda env create -f conda_env.yaml
 fi
+
+source activate "ml_pipeline"
 
 # create directed acyclic graph showing workflow
 snakemake --dag | dot -Tsvg > dag.svg
