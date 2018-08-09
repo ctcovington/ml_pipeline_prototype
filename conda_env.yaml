@@ -9,9 +9,9 @@ dependencies:
     - pyyaml>=3.12 # contains yaml python package
     - xgboost>=0.71.2
     - r-base>=3.4.1
-    - r-devtools>=1.13.6
+    - r-devtools>=1.13.4
     - r-data.table>=1.11.4
     - r-stringr>=1.2.0
-    - r-glmnet>=2.0-16
-    - r-matrix>=1.2-14
+    - r-glmnet>=2.0.16
+    - r-matrix>=1.2.14
     - r-ggplot2>=3.0.0
