@@ -6,7 +6,7 @@ Repository for machine learning pipeline code
 ## Table of Contents
 0. [State of the Project](#State_of_the_Project)
 1. [Project Overview](#Project_Overview)
-2. [File Structure](#Directory_Structure).p
+2. [File Structure](#Directory_Structure)
 3. [Running the Pipeline](#Running_the_Pipeline)
 
 <hr>
