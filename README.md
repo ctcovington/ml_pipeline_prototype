@@ -16,6 +16,7 @@ As of 8.6.18, the project should contain the general structure necessary to go f
 
 Once this has been done, there are some things that could be useful for someone to add in the future. This is by no means an exhaustive list, and future users should think of things that would be useful and either note them here or add the features themselves!
 
+- [ ] We are not sure if the conda environment sourcing actually passes the correct package versions to R, because it happens outside of the batch mode submissions of the R scripts. One solution would be to submit bash scripts as batch jobs (and have the bash scripts load the conda environment and run the R script) -- we believe this would require the bash scripts to read in the variables for each R script from `config.yaml`. Another possibility is that we wrap the whole Snakfile process in a bash script and run each R script within normally, but we think this would hinder our ability to use different cluster configurations (i.e. amount of RAM, cores, etc.) for different parts of the pipeline 
 - [ ] Add various capabilities/details to training set generation (e.g. allow for up/downsampling of some group)
 - [ ] Add more model diagnostics/analysis
 - [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
@@ -31,7 +32,7 @@ The pipeline should work for any features that were generated via the [features 
 
 ### File Structure <a name='File_Structure'></a>
 - `cluster.json`: configuration file for submitting jobs to a computing cluster
-- `conda_env.yaml`: configuration file to create conda environment for running pipeline
+- `conda_env.yaml`: configuration file to create conda environment for running the pipeline
 - `config.yaml`: configuration file containing  all parameters necessary to run pipeline
 - `run_pipeline.sh`: bash script that runs pipeline
 - `Snakefile`: snakemake file that specifies rules (tasks to be completed)
