@@ -18,7 +18,7 @@ if (length(args) != arg_len) {
 
 ### main function ###
 mergeSubsets <- function(data_dir, unit_id) {
-    # loop over all files in the relevant directory
+    # loop over all files in the relevant directory, load them, and add them to a list 
     files <- list.files(sprintf('%s01_feature_data/', data_dir))
     component_files <- files[! files == 'full_feature_data.csv']
     dt_list <- list()

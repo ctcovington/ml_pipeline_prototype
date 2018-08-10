@@ -76,8 +76,10 @@ createModelingData <- function(cohort_filepath, splits, values, outcomes, names,
 
 ### Component functions ###
 loadFeatures <- function(data_dir, use_ecg_feats, ecg_filepath) {
+    # define feature filepath
     feature_file <- sprintf('%s01_feature_data/full_feature_data.csv', data_dir)
 
+    # load features
     assign('feature_dt', fread(feature_file), envir=.GlobalEnv)
 
     if (use_ecg_feats) {
@@ -93,6 +95,7 @@ loadFeatures <- function(data_dir, use_ecg_feats, ecg_filepath) {
 }
 
 loadAndAppendModelOutcome <- function(cohort_filepath, splits, values, outcomes, names) {
+    # load cohort
     outcome_dt <- fread(cohort_filepath)
 
     # choose columns to keep
@@ -128,6 +131,7 @@ impute <- function(feature_with_outcome_dt) {
 }
 
 splitTrainEnsembleTrainHoldout <- function(feature_with_outcome_dt, train_prop, splits, values, outcomes, names, data_dir, cluster_id) {
+    # define modeling data directory and reset it (delete directory and files, then remake)
     modeling_data_dir <- sprintf('%s02_modeling_data/', data_dir)
     unlink(modeling_data_dir, recursive = TRUE)
     dir.create(modeling_data_dir)
@@ -146,24 +150,26 @@ splitTrainEnsembleTrainHoldout <- function(feature_with_outcome_dt, train_prop, 
     train_vals <- train_vals[!train_vals %in% ols_train_vals]
     rm(unique_cluster_id)
 
-    # create train, ensemble_train, and holdout sets
+    ### create train, ensemble_train, and holdout sets ###
+
+    # create training set
     assign('train', feature_with_outcome_dt[get(cluster_id) %in% train_vals])
 
+    # create and save ensemble training set
     assign('ensemble_train', feature_with_outcome_dt[get(cluster_id) %in% ols_train_vals])
     saveRDS(ensemble_train, sprintf('%sensemble_train_data.rds', modeling_data_dir))
     rm(ensemble_train)
     cat('done saving ensemble_train\n')
 
+    # create and save holdout set
     assign('holdout', feature_with_outcome_dt[! get(cluster_id) %in% c(train_vals, ols_train_vals)])
     saveRDS(holdout, sprintf('%sholdout_data.rds', modeling_data_dir))
     rm(holdout)
     cat('done saving holdout\n')
     rm(list = c('train_vals', 'ols_train_vals'))
 
-    # split training set back into its component pieces
+    # split training set back into its component pieces and save 
     for (i in 1:length(splits)) {
-        # cat(sprintf('before making train_%s:\n\n', splits[i]))
-        # print(sort( sapply(ls(),function(x){object.size(get(x))})))
         if (splits[i] == 'full') {
             dt <- train
         } else {

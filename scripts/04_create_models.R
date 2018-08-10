@@ -63,10 +63,12 @@ if (length(unique(c(a,b,c,d))) != 1) {
 
 ### Main function ###
 createModels <- function(splits, outcomes, names, model_types, data_dir, model_dir, unit_id, cluster_id, learning_rate, obj, scale_pos_weight, eval_metric, max_depth, nround, colsample_bytree, seed) {
+    # define prediction data directory and reset it (delete directory and files, then remake)
     prediction_data_dir <- sprintf('%s03_data_with_predictions/', data_dir)
     unlink(prediction_data_dir, recursive = TRUE)
     dir.create(prediction_data_dir)
 
+    # reset model directory (delete directory and files, then remake)
     unlink(model_dir, recursive = TRUE)
     dir.create(model_dir)
 
@@ -74,14 +76,14 @@ createModels <- function(splits, outcomes, names, model_types, data_dir, model_d
     loadData(outcomes, names, data_dir)
 
     # iterate over training sets and train each model
-    prediction_cols <<- c()
+    prediction_cols <<- c() # this will serve as a list of names of columns including model predictions -- we need to track them because they are added to our data set as we iterate over the model creation, but we don't want them included as predictors
     for (i in 1:length(names)) {
         cat(sprintf('\n### make and run models for %s ###\n\n', names[i]))
         other_outcomes <- outcomes[outcomes != outcomes[i]] # vector of outcomes we don't want -- these will be removed before modeling
         makeAndRunModels(dt_full = get(sprintf('%s_dt', names[i])), splits = splits, outcome = outcomes[i], name = names[i], model_type = model_types[i], data_dir, model_dir, unit_id, cluster_id, other_outcomes, prediction_cols, learning_rate, obj, scale_pos_weight, eval_metric, max_depth, nround, colsample_bytree, seed)
     }
 
-    # create new holdout_dt and ensemble_train_dt (now including predicted outcomes)
+    # create new holdout_dt and ensemble_train_dt (now including predicted outcomes), then save
     cat('\nadd predictions to ensemble_train and holdout\n')
     saveRDS(holdout_dt, sprintf('%sholdout_data_with_predictions.rds', prediction_data_dir))
     saveRDS(ensemble_train_dt, sprintf('%sensemble_train_data_with_predictions.rds', prediction_data_dir))
@@ -107,7 +109,6 @@ makeAndRunModels <- function(dt_full, splits, outcome, name, model_type, data_di
     # remove extraneous outcome columns, as well as ID columns
     extra_cols <- c(other_outcomes, prediction_cols, splits, unit_id, cluster_id)
     remove_cols <- extra_cols[extra_cols %in% names(dt_full)]
-
     dt <- dt_full[, -remove_cols, with = FALSE]
     ensemble_train_temp <- ensemble_train_dt[, -remove_cols, with = FALSE]
     holdout_temp <- holdout_dt[, -remove_cols, with = FALSE]
@@ -131,8 +132,6 @@ makeAndRunModels <- function(dt_full, splits, outcome, name, model_type, data_di
     if (grepl('lasso', model_type)) {
         cat('run lasso\n')
         # run and save lasso
-        # registerDoParallel(min(detectCores() - 1, 10))
-        # lasso <- cv.glmnet(x = X, y = Y, alpha = 1, family = 'binomial', nfolds = 10, parallel = TRUE)[9:10]
         lasso <- cv.glmnet(x = X, y = Y, alpha = 1, family = 'binomial', nfolds = 10)
         lambda_1se <- lasso$lambda.1se # 'optimal' lambda
         saveRDS(lasso, sprintf('%s%s_lasso.rds', model_dir, name))

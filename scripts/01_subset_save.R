@@ -30,13 +30,13 @@ raw_subset_dir <- sprintf('%s01_feature_data/', data_dir)
 dir.create(raw_subset_dir)
 
 subsetSave <- function(file, feature_dir, data_dir, unit_id, count_files, non_count_files, missingness_threshold_count, missingness_threshold_non_count) {
-    dt <- fread(sprintf('%s%s', feature_dir, file))
-    ed_enc_id_names <- names(dt)[names(dt) %like% unit_id]
-    if (length(ed_enc_id_names) != 1) { # exit script if there is not exactly one variable name in 'dt' containing 'ed_inc_id'
+    dt <- fread(sprintf('%s%s', feature_dir, file)) # read in features
+    unit_id_names <- names(dt)[names(dt) %like% unit_id] # get names that are similar to our specified unit_id
+    if (length(unit_id_names) != 1) { # exit script if there is not exactly one variable name in 'dt' containing unit_id
         cat(sprintf('%s has multiple variable names containing \'%s\'\n', non_stats_files[i], unit_id))
         quit()
     }
-    setnames(dt, ed_enc_id_names, unit_id) # standardize ed_enc_id variable name
+    setnames(dt, unit_id_names, unit_id) # standardize unit_id variable name
 
     # subset columns based on missingness
     n <- nrow(dt) # number of observations
@@ -47,6 +47,7 @@ subsetSave <- function(file, feature_dir, data_dir, unit_id, count_files, non_co
         file_prefix <- str_split(file, '_')[[1]][1] # get beginning of filename up to first '_' -- this should cover any files that are 'non_count_files'
     }
 
+    # set missingness thresholds based on whether file is a 'count' or 'non-count' file
     if (file_prefix %in% count_files) {
         low_miss <- prop_missing < missingness_threshold_count
     } else if (file_prefix %in% non_count_files) {
