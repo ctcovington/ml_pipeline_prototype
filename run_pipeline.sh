@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# either create or load conda environment
+# create conda environment (if necessary)
 if ! conda info --envs | grep -q "ml_pipeline"; then
     conda env create -f conda_env.yaml
 fi
 
+# load conda environment
 source activate "ml_pipeline"
 
 # create directed acyclic graph showing workflow
