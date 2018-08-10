@@ -61,10 +61,6 @@ outputROC <- function(dt, prediction_col_name, ensemble_outcome, ensemble_perfor
     d_tpr <- c(diff(roc_dt$tpr), 0) # true positive rate step sizes
     d_fpr <- c(diff(roc_dt$fpr), 0) # false positive rate step sizes
     auc <- sum(roc_dt$tpr * d_fpr) + sum(d_tpr * d_fpr) / 2 # calculate AUC using trapezoidal sum -- NOTE: version below might be more clear, but is slower
-    # auc <- 0
-    # for (i in 2:nrow(roc_dt)) {
-    #     auc = auc + (1/2) * (roc_dt[i-1, tpr] + roc_dt[i, tpr]) * (roc_dt[i, fpr] - roc_dt[i-1, fpr])
-    # }
 
     # plot ROC
     options(device = 'png')
