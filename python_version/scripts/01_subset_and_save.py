@@ -3,7 +3,6 @@ import os
 import pyarrow
 import pyarrow.parquet
 import pandas
-import numpy as np
 from joblib import Parallel, delayed
 
 # define functions
@@ -57,7 +56,7 @@ def main():
     args = sys.argv # read in arguments
 
     if (len(args) - 1) != arg_len: # args also includes script name as argument, so subtract 1
-        print('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
+        sys.stderr.write('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
         sys.exit()
     else:
         data_dir = str(args[1])

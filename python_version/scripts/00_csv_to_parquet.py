@@ -29,7 +29,7 @@ def main():
     args = sys.argv # read in arguments
 
     if (len(args) - 1) != arg_len: # args also includes script name as argument, so subtract 1
-        print('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
+        sys.stderr.write('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
         sys.exit()
     else:
         feature_dir = str(args[1])
