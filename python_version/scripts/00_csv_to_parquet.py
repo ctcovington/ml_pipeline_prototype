@@ -24,10 +24,11 @@ def convertCSVToParquet(filename, input_directory, output_directory):
     return None
 
 def main():
-    arg_len = 2
-    args = sys.argv
+    # accept and manage command line arguments
+    arg_len = 2 # number of expected arguments
+    args = sys.argv # read in arguments
 
-    if (len(args) - 1) != arg_len:
+    if (len(args) - 1) != arg_len: # args also includes script name as argument, so subtract 1
         print('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
         sys.exit()
     else:

@@ -56,23 +56,29 @@ def main():
     arg_len = 6 # number of expected arguments
     args = sys.argv # read in arguments
 
-    if (len(args) - 1) != arg_len: #
+    if (len(args) - 1) != arg_len: # args also includes script name as argument, so subtract 1
         print('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
         sys.exit()
     else:
         data_dir = str(args[1])
+        print('data_dir: %s' % data_dir)
         unit_id = str(args[2])
+        print('unit_id: %s' % unit_id)
         count_files = str(args[3])
+        print('count_files: %s' % count_files)
         non_count_files = str(args[4])
+        print('non_count_files: %s' % non_count_files)
         missingness_threshold_count = float(args[5])
+        print('missingness_threshold_count: %s' % missingness_threshold_count)
         missingness_threshold_non_count = float(args[6])
+        print('missingness_threshold_non_count: %s' % missingness_threshold_non_count)
 
     # convert multi-argument arguments to vectors
     count_files = count_files.split('--')
     non_count_files = non_count_files.split('--')
 
     # create directory for subsets of raw feature data
-    subset_dir = os.path.join(data_dir, '01_subset_features')
+    subset_dir = os.path.join(data_dir, '01_final_features')
     if not os.path.exists(subset_dir):
         os.makedirs(subset_dir)
 
