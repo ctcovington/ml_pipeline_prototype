@@ -9,8 +9,12 @@ import functools
 def mergeSubsets(data_directory, unit_id):
     subsets = []
     for filename in os.listdir(data_directory):
+        if filename == 'full_feature_data.parquet': # make sure we don't merge on the full feature data if it has already been created
+            continue
+        print('load %s' % filename)
         dt = pyarrow.parquet.read_table(os.path.join(data_directory, filename)).to_pandas()
         subsets.append(dt)
+    print('merging all subsets')
     return functools.reduce(lambda left_dt, right_dt: pandas.merge(left_dt, right_dt, how = 'outer', on = unit_id), subsets)
 
 # define main
@@ -33,7 +37,10 @@ def main():
     merged_dt = mergeSubsets(data_directory = feature_dir, unit_id = unit_id)
 
     # write merged version to file
+    print('write merged data to full_feature_data.parquet')
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(merged_dt), os.path.join(feature_dir, 'full_feature_data.parquet'))
+
+    return None
 
 # execute main
 if __name__ == '__main__':

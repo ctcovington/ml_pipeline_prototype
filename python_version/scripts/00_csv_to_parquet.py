@@ -3,6 +3,7 @@ import pyarrow
 import pyarrow.parquet
 import pandas
 import sys
+import shutil
 from joblib import Parallel, delayed
 
 def convertCSVToParquet(filename, input_directory, output_directory):
@@ -37,14 +38,16 @@ def main():
         data_dir = str(args[2])
         print('data_dir: %s' % data_dir)
 
-    # create directories to which we write parquet files
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
-    if not os.path.exists(os.path.join(data_dir, '00_raw_features')):
-        os.mkdir(os.path.join(data_dir, '00_raw_features'))
+    # reset/create directories to which we write parquet files
+    if os.path.exists(data_dir):
+        shutil.rmtree(data_dir)
+    os.mkdir(data_dir)
+    os.mkdir(os.path.join(data_dir, '00_raw_features'))
 
     # loop over files and convert them to parquet
     Parallel(n_jobs = len(os.listdir(feature_dir)))(delayed(convertCSVToParquet)(filename = filename, input_directory = feature_dir, output_directory = os.path.join(data_dir, '00_raw_features')) for filename in os.listdir(feature_dir) if 'stats' not in filename and filename.endswith('csv'))
+
+    return None
 
 # execute main
 if __name__ == '__main__':
