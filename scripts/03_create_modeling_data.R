@@ -85,6 +85,7 @@ loadFeatures <- function(data_dir, use_ecg_feats, ecg_filepath, unit_id) {
     if (use_ecg_feats) {
       # read ecg features file
       assign('ecg_feats', readRDS(ecg_filepath), envir=.GlobalEnv)
+      assign('ecg_feats', ecg_feats[, c('ecg_file', 'ecg_meta_file', 'npy_index') := NULL], envir=.GlobalEnv)
 
       # take first instance of ecg feature if multiple exist per visit
       assign('ecg_feats', unique(ecg_feats, by = c(unit_id)), envir=.GlobalEnv)
