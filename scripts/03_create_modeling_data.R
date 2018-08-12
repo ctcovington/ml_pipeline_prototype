@@ -59,7 +59,7 @@ set.seed(1)
 createModelingData <- function(cohort_filepath, splits, values, outcomes, names, ecg_filepath, use_ecg_feats, train_prop, ensemble_train_prop, data_dir, unit_id, cluster_id) {
     # load features
     cat('load features\n')
-    loadFeatures(data_dir, use_ecg_feats, ecg_filepath)
+    loadFeatures(data_dir, use_ecg_feats, ecg_filepath, unit_id)
 
     # load vector of outcomes and append to features
     cat('load and append model outcome\n')
@@ -75,7 +75,7 @@ createModelingData <- function(cohort_filepath, splits, values, outcomes, names,
 }
 
 ### Component functions ###
-loadFeatures <- function(data_dir, use_ecg_feats, ecg_filepath) {
+loadFeatures <- function(data_dir, use_ecg_feats, ecg_filepath, unit_id) {
     # define feature filepath
     feature_file <- sprintf('%s01_feature_data/full_feature_data.csv', data_dir)
 
@@ -168,7 +168,7 @@ splitTrainEnsembleTrainHoldout <- function(feature_with_outcome_dt, train_prop, 
     cat('done saving holdout\n')
     rm(list = c('train_vals', 'ols_train_vals'))
 
-    # split training set back into its component pieces and save 
+    # split training set back into its component pieces and save
     for (i in 1:length(splits)) {
         if (splits[i] == 'full') {
             dt <- train
