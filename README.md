@@ -20,6 +20,7 @@ Once this has been done, there are some things that could be useful for someone 
 - [ ] We are not sure if the conda environment sourcing actually passes the correct package versions to R, because it happens outside of the batch mode submissions of the R scripts. One solution would be to submit bash scripts as batch jobs (and have the bash scripts load the conda environment and run the R script) -- we believe this would require the bash scripts to read in the variables for each R script from `config.yaml`. Another possibility is that we wrap the whole Snakfile process in a bash script and run each R script within normally, but we think this would hinder our ability to use different cluster configurations (i.e. amount of RAM, cores, etc.) for different parts of the pipeline
 - [ ] Rewrite R scripts into python. This will align with the (possible) goal of becoming a python-focused lab, and will pair more naturally with Snakemake as a workflow management system. Christian is starting on this but likely will not be able to finish before 8.17.18.
 - [ ] ecg file appears to have extraneous columns we wouldn't want in the model (`ecg_file`, `ecg_meta_file`, `npy_index`) -- these are removed in the python version, but we should make sure that this is correct
+- [ ] Set data types in `count_files` to be integers (except for `unit_id`) early in the process
 - [ ] Add various capabilities/details to training set generation (e.g. allow for up/downsampling of some group)
 - [ ] Add more model diagnostics/analysis
 - [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
@@ -44,7 +45,7 @@ The pipeline should work for any features that were generated via the [features 
 <hr>
 
 ### Data Setup <a name='Data_Setup'></a>
-The features file coming from the [features pipeline](../standard_features) should be standardized enough to work with this pipeline out of the box. You will, however, have to ensure that your cohort file meets the appropriate specifications. In particular, the cohort file (the file you will use as `cohort_filepath` in `config.yaml`) must have variables defining each subset of the data on which you would like to train separately, as well as outcomes on each. The easiest way to set this up is to have each be a binary variable, specifying whether or not the observations belongs to the subset in question or had the outcome in question. 
+The features file coming from the [features pipeline](../standard_features) should be standardized enough to work with this pipeline out of the box. You will, however, have to ensure that your cohort file meets the appropriate specifications. In particular, the cohort file (the file you will use as `cohort_filepath` in `config.yaml`) must have variables defining each subset of the data on which you would like to train separately, as well as outcomes on each. The easiest way to set this up is to have each be a binary variable, specifying whether or not the observations belongs to the subset in question or had the outcome in question.
 
 <hr>
 
