@@ -18,7 +18,6 @@ def loadFeatures(data_dir, use_ecg_feats, ecg_filepath, unit_id):
 
     # load features
     feature_dt = pyarrow.parquet.read_table(feature_filepath).to_pandas()
-    # feature_dt = pyarrow.parquet.read_table(feature_filepath, columns = ['ed_enc_id']).to_pandas() # read only one column for testing
 
     if use_ecg_feats is True:
         # read ecg features file
@@ -98,9 +97,9 @@ def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, 
         # create ensemble_train and holdout sets
         if len(ensemble_train_vals) > 0: # if we have ensemble train values
             print('saving ensemble train set')
-            pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(ensemble_train_vals)]), os.path.join(modeling_data_dir, 'ensemble_train_data.parquet')) # create ensemble train set
+            pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(ensemble_train_vals)]), os.path.join(modeling_data_dir, 'ensemble_train.parquet')) # create ensemble train set
         print('saving holdout set')
-        pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout_data.parquet')) # create holdout set
+        pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
 
         # create training set and split it into its component pieces
         dt.drop(dt[dt[cluster_id].isin(numpy.concatenate([ensemble_train_vals, holdout_vals]))].index, inplace = True)
@@ -108,7 +107,7 @@ def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, 
         for split, value, name in zip(splits, values, names):
             if split == 'full':
                 print('saving full training set')
-                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(modeling_data_dir, 'train_full.parquet'))
+                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
             else:
                 print('saving %s training set' % name)
                 pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[split] == value]), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
@@ -137,7 +136,7 @@ def main():
         print('names: %s' % names)
         ecg_filepath = str(args[6])
         print('ecg_filepath: %s' % ecg_filepath)
-        use_ecg_feats = bool(args[7])
+        use_ecg_feats = str(args[7])
         print('use_ecg_Feats: %s' % use_ecg_feats)
         train_prop = float(args[8])
         print('train_prop: %s' % train_prop)
@@ -149,6 +148,9 @@ def main():
         print('unit_id: %s' % unit_id)
         cluster_id = str(args[12])
         print('cluster_id: %s' % cluster_id)
+
+        # convert use_ecg_feats to bool
+        use_ecg_feats = use_ecg_feats == 'True'
 
         # convert multi-argument arguments to vectors
         splits = splits.split('--')
