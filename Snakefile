@@ -3,10 +3,9 @@ import os
 import glob
 import yaml
 
-# create name of log file and reset it if it exists
-logfile = os.path.join(os.getcwd(), 'pipeline.log')
-if os.path.exists(logfile):
-    os.remove(logfile)
+# reset log directory
+os.system('rm -rf log/')
+os.system('mkdir -p log/')
 
 # load configuration file as dictionary
 config = yaml.load(open('config.yaml'))
@@ -49,60 +48,54 @@ parameter_values = {}
 for key, value in parameter_pairings.items():
     parameter_values[key] = config[value][key]
 
-# identify relevant feature files
+# identify relevant feature files -- we want to use only csv files from the feature directory that do not have 'stats' in the filename
 all_feature_files = [os.path.splitext(os.path.basename(f))[0] for f in glob.glob(parameter_values['feature_dir'] + '*.csv')]
 non_stats_feature_files = [file for file in all_feature_files if 'stats' not in file]
 
 ### rules ###
-rule post_modeling_analysis:
-    input:
-        holdout_with_predictions_including_ensemble = parameter_values['data_dir'] + '03_data_with_predictions/holdout_data_with_predictions_including_ensemble.rds'
-    params:
-        ensemble_outcome = parameter_values['ensemble_outcome'],
-        data_dir = parameter_values['data_dir'],
-        output_dir = parameter_values['output_dir'],
-        ensemble_performance_split = parameter_values['ensemble_performance_split'],
-        ensemble_performance_split_value = parameter_values['ensemble_performance_split_value']
-    log:
-        logfile
-    shell:
-        """
-        cd scripts
-        printf "perform post-modeling analysis\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value}" 06_post_modeling_analysis.R 06_post_modeling_analysis.Rout
-        cd ..
-        """
+# rule post_modeling_analysis:
+#     input:
+#         holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+#     conda:
+#         'conda_env.yaml'
+#     params:
+#         ensemble_outcome = parameter_values['ensemble_outcome'],
+#         data_dir = parameter_values['data_dir'],
+#         output_dir = parameter_values['output_dir'],
+#         ensemble_performance_split = parameter_values['ensemble_performance_split'],
+#         ensemble_performance_split_value = parameter_values['ensemble_performance_split_value']
+#     shell:
+#         """
+#         rm -rf log/06_*
+#         python scripts/06_post_modeling_analysis.py {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value} > log/06_post_modeling_analysis.out 2>log/06_post_modeling_analysis.err
+#         """
 
 rule create_ensemble_model:
     input:
-        ensemble_train_with_predictions = parameter_values['data_dir'] + '03_data_with_predictions/ensemble_train_data_with_predictions.rds',
-        holdout_with_predictions = parameter_values['data_dir'] + '03_data_with_predictions/holdout_data_with_predictions.rds'
+        ensemble_train_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'ensemble_train_with_predictions.parquet'),
+        holdout_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions.parquet')
     output:
-        holdout_with_predictions_including_ensemble = parameter_values['data_dir'] + '03_data_with_predictions/holdout_data_with_predictions_including_ensemble.rds'
+        holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
     params:
         ensemble_outcome = parameter_values['ensemble_outcome'],
         names = parameter_values['names'],
         model_types = parameter_values['model_types'],
         data_dir = parameter_values['data_dir'],
         model_dir = parameter_values['model_dir']
-    log:
-        logfile
     shell:
         """
-        cd scripts
-        printf "create ensemble model and predict outcome\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir}" 05_create_ensemble_model.R 05_create_ensemble_model.Rout
-        cd ..
+        rm -rf log/05_*
+        python scripts/05_create_ensemble_model.py {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir} > log/05_create_ensemble_model.out 2>log/05_create_ensemble_model.err
         """
 
 rule create_models:
     input:
-        train_data = [parameter_values['data_dir'] + '02_modeling_data/train_' + outcome + '_data.rds' for outcome in parameter_values['names'].split('--')],
-        ensemble_train_data = parameter_values['data_dir'] + '02_modeling_data/ensemble_train_data.rds',
-        holdout_data = parameter_values['data_dir'] + '02_modeling_data/holdout_data.rds'
+        train_data = [os.path.join(parameter_values['data_dir'], '02_modeling_data', 'train_' + outcome + '.parquet') for outcome in parameter_values['names'].split('--')],
+        ensemble_train_data = os.path.join(parameter_values['data_dir'], '02_modeling_data', 'ensemble_train.parquet'),
+        holdout_data = os.path.join(parameter_values['data_dir'], '02_modeling_data', 'holdout.parquet')
     output:
-        ensemble_train_with_predictions = parameter_values['data_dir'] + '03_data_with_predictions/ensemble_train_data_with_predictions.rds',
-        holdout_with_predictions = parameter_values['data_dir'] + '03_data_with_predictions/holdout_data_with_predictions.rds'
+        ensemble_train_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'ensemble_train_with_predictions.parquet'),
+        holdout_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions.parquet')
     params:
         splits = parameter_values['splits'],
         outcomes = parameter_values['outcomes'],
@@ -120,24 +113,20 @@ rule create_models:
         nround = parameter_values['nround'],
         colsample_bytree = parameter_values['colsample_bytree'],
         seed = parameter_values['seed']
-    log:
-        logfile
     shell:
         """
-        cd scripts
-        printf "create models and predict outcomes\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.splits} {params.outcomes} {params.names} {params.model_types} {params.data_dir} {params.model_dir} {params.unit_id} {params.cluster_id} {params.learning_rate} {params.obj} {params.scale_pos_weight} {params.eval_metric} {params.max_depth} {params.nround} {params.colsample_bytree} {params.seed}" 04_create_models.R 04_create_models.Rout
-        cd ..
+        rm -rf log/04_*
+        python scripts/04_create_models.py {params.splits} {params.outcomes} {params.names} {params.model_types} {params.data_dir} {params.model_dir} {params.unit_id} {params.cluster_id} {params.learning_rate} {params.obj} {params.scale_pos_weight} {params.eval_metric} {params.max_depth} {params.nround} {params.colsample_bytree} {params.seed} > log/04_create_models.out 2>log/04_create_models.err
         """
 
 rule create_modeling_data:
     input:
         cohort_filepath = parameter_values['cohort_filepath'],
-        features = parameter_values['data_dir'] + '01_feature_data/full_feature_data.csv'
+        features = os.path.join(parameter_values['data_dir'], '01_final_features', 'full_feature_data.parquet')
     output:
-        train_sets = [parameter_values['data_dir'] + '02_modeling_data/train_' + name + '_data.rds' for name in parameter_values['names'].split('--')],
-        ensemble_train_set = parameter_values['data_dir'] + '02_modeling_data/ensemble_train_data.rds',
-        holdout_set = parameter_values['data_dir'] + '02_modeling_data/holdout_data.rds'
+        train_sets = [os.path.join(parameter_values['data_dir'], '02_modeling_data', 'train_' + name + '.parquet') for name in parameter_values['names'].split('--')],
+        ensemble_train_set = os.path.join(parameter_values['data_dir'], '02_modeling_data', 'ensemble_train.parquet'),
+        holdout_set = os.path.join(parameter_values['data_dir'], '02_modeling_data', 'holdout.parquet')
     params:
         cohort_filepath = parameter_values['cohort_filepath'],
         splits = parameter_values['splits'],
@@ -151,55 +140,57 @@ rule create_modeling_data:
         data_dir = parameter_values['data_dir'],
         unit_id = parameter_values['unit_id'],
         cluster_id = parameter_values['cluster_id']
-    log:
-        logfile
     shell:
         """
-        cd scripts
-        printf "creating modeling data\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.cohort_filepath} {params.splits} {params.values} {params.outcomes} {params.names} {params.ecg_filepath} {params.use_ecg_feats} {params.train_prop} {params.ensemble_train_prop} {params.data_dir} {params.unit_id} {params.cluster_id}" 03_create_modeling_data.R 03_create_modeling_data.Rout
-        cd ..
+        rm -rf log/03_*
+        python scripts/03_create_modeling_data.py {params.cohort_filepath} {params.splits} {params.values} {params.outcomes} {params.names} {params.ecg_filepath} {params.use_ecg_feats} {params.train_prop} {params.ensemble_train_prop} {params.data_dir} {params.unit_id} {params.cluster_id} > log/03_create_modeling_data.out 2>log/03_create_modeling_data.err
         """
 
 rule merge_subsets:
     input:
-        files = expand(config['pipeline_directories']['data_dir'] + '01_feature_data/{file}.csv', file = non_stats_feature_files)
+        # files = expand(config['pipeline_directories']['data_dir'] + '01_feature_data/{file}.csv', file = non_stats_feature_files)
+        files = expand(os.path.join(parameter_values['data_dir'], '01_final_features', '{file}.parquet'), file = non_stats_feature_files)
     output:
-        file = config['pipeline_directories']['data_dir'] + '01_feature_data/full_feature_data.csv'
+        # file = config['pipeline_directories']['data_dir'] + '01_feature_data/full_feature_data.csv'
+        file = os.path.join(parameter_values['data_dir'], '01_final_features', 'full_feature_data.parquet')
     params:
         data_dir = parameter_values['data_dir'],
         unit_id = parameter_values['unit_id']
-    log:
-        logfile
     shell:
         """
-        cd scripts
-        printf "merging together all subset files\n" >> {log}
-        R CMD BATCH --no-save --no-restore "--args {params.data_dir} {params.unit_id}" 02_merge_subsets.R 02_merge_subsets.Rout
-        cd ..
+        rm -rf log/02_*
+        python scripts/02_merge_subets.py {params.data_dir} {params.unit_id} > log/02_merge_subsets.out 2>log/02_merge_subsets.err
         """
 
 rule subset_save:
     input:
-        files = expand(parameter_values['feature_dir'] + '{file}.csv', file = non_stats_feature_files)
+        # files = expand(parameter_values['feature_dir'] + '{file}.csv', file = non_stats_feature_files)
+        files = expand(os.path.join(parameter_values['data_dir'], '00_raw_features', '{file}.parquet'), file = non_stats_feature_files)
     output:
-        files = expand(parameter_values['data_dir'] + '01_feature_data/{file}.csv', file = non_stats_feature_files)
+        # files = expand(parameter_values['data_dir'] + '01_feature_data/{file}.csv', file = non_stats_feature_files)
+        files = expand(os.path.join(parameter_values['data_dir'], '01_final_features', '{file}.parquet'), file = non_stats_feature_files)
     params:
-        feature_dir = parameter_values['feature_dir'],
         data_dir = parameter_values['data_dir'],
         unit_id = parameter_values['unit_id'],
         count_files = parameter_values['count_files'],
         non_count_files = parameter_values['non_count_files'],
         missingness_threshold_count = parameter_values['missingness_threshold_count'],
         missingness_threshold_non_count = parameter_values['missingness_threshold_non_count']
-    log:
-        logfile
     shell:
         """
-        cd scripts
-        for file in {input.files}; do
-             printf "subsetting and saving $(basename $file)\n" >> {log}
-             R CMD BATCH --no-save --no-restore "--args $(basename $file) {params.feature_dir} {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count}" 01_subset_save.R 01_subset_save.Rout
-        done
-        cd ..
+        rm -rf log/01_*
+        python scripts/01_subset_and_save.py {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count} > log/01_subset_and_save.out 2>log/01_subset_and_save.err
+        """
+rule csv_to_parquet:
+    input:
+        files = expand(os.path.join(parameter_values['feature_dir'], '{file}.csv'), file = non_stats_feature_files)
+    output:
+        files = expand(os.path.join(parameter_values['data_dir'], '00_raw_features', '{file}.parquet'), file = non_stats_feature_files)
+    params:
+        feature_dir = parameter_values['feature_dir'],
+        data_dir = parameter_values['data_dir']
+    shell:
+        """
+        rm -rf log/00_*
+        python scripts/00_csv_to_parquet.py {params.feature_dir} {params.data_dir} > log/00_csv_to_parquet.out 2>log/00_csv_to_parquet.err
         """
