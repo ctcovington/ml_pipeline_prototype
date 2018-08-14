@@ -8,20 +8,10 @@ import itertools
 import xgboost
 import sklearn
 from sklearn import linear_model
+from sklearn.externals import joblib
+import userutil
 
 # define functions
-def flatten(list):
-    '''
-    Given a list, possibly nested to any level, return it flattened
-    '''
-    new_list = []
-    for item in list:
-        if type(item) == type([]):
-            new_list.extend(flatten(item))
-        else:
-            new_list.append(item)
-    return new_list
-
 def loadData(data_dir, names):
     # initialize dictionary of data
     dt_dict = dict()
@@ -56,7 +46,7 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
 
         # remove extraneous outcome columns, as well as ID columns
         other_outcomes = [elem for elem in outcomes if elem != outcome]
-        extra_cols = flatten([other_outcomes] + [splits] + [unit_id] + [cluster_id])
+        extra_cols = userutil.flatten([other_outcomes] + [splits] + [unit_id] + [cluster_id])
         remove_cols = [col for col in extra_cols if col in train_dt.columns]
         train_dt.drop(columns = remove_cols, inplace = True)
         ensemble_train_dt.drop(columns = remove_cols, inplace = True)
@@ -88,6 +78,9 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
             ensemble_train_prediction_cols.append(ensemble_train_predictions)
             holdout_prediction_cols.append(holdout_predictions)
 
+            # save model
+            sklearn.externals.joblib.dump(lasso, os.path.join(model_dir, '%s_lasso.pkl' % name))
+
         # run gradient boosted tree if specified to do so
         if 'gbt' in model_type:
             # define data
@@ -115,6 +108,9 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
             prediction_col_names.append('%s_gbt_prediction' % name)
             ensemble_train_prediction_cols.append(ensemble_train_predictions)
             holdout_prediction_cols.append(holdout_predictions)
+
+            # save model
+            sklearn.externals.joblib.dump(xgb, os.path.join(model_dir, '%s_gbt.pkl' % name))
 
     # add predictions to ensemble_train and holdout sets
     for name, ensemble_predict, holdout_predict in zip(prediction_col_names, ensemble_train_prediction_cols, holdout_prediction_cols):

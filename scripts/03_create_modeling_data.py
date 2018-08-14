@@ -9,6 +9,7 @@ import math
 import numpy
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
+import userutil
 
 # define functions
 def loadFeatures(data_dir, use_ecg_feats, ecg_filepath, unit_id):
@@ -56,11 +57,15 @@ def loadAndAppendCohortInfo(feature_dt, cohort_filepath, splits, values, outcome
     outcome_dt[cluster_id] = outcome_dt[cluster_id].astype(str)
 
     # choose columns to keep
-    keep_cols = [unit_id, cluster_id] + splits + outcomes
+    keep_cols = userutil.flatten([unit_id] + [cluster_id] + [splits] + [outcomes])
     keep_cols = [col for col in keep_cols if col is not 'full'] # don't include 'full'
 
     # keep relevant columns
     outcome_dt.drop(columns = [col for col in outcome_dt.columns if col not in keep_cols], inplace = True)
+
+    # fill missing data with 0 in cohort file
+    # NOTE: this relies on the assumption that missing data could only happen when an outcome is not defined for some observation (and thus could be considered 0)
+    outcome_dt = outcome_dt.fillna(0)
 
     # merge outcomes data onto features
     print('merging cohort data onto features')
@@ -102,7 +107,7 @@ def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, 
         pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
 
         # create training set and split it into its component pieces
-        dt.drop(dt[dt[cluster_id].isin(numpy.concatenate([ensemble_train_vals, holdout_vals]))].index, inplace = True)
+        dt.drop(dt[dt[cluster_id].isin(numpy.concatenate([ensemble_train_vals, holdout_vals]))].index, inplace = True) # drop ensemble_train and holdout observations
 
         for split, value, name in zip(splits, values, names):
             if split == 'full':
@@ -137,7 +142,7 @@ def main():
         ecg_filepath = str(args[6])
         print('ecg_filepath: %s' % ecg_filepath)
         use_ecg_feats = str(args[7])
-        print('use_ecg_Feats: %s' % use_ecg_feats)
+        print('use_ecg_feats: %s' % use_ecg_feats)
         train_prop = float(args[8])
         print('train_prop: %s' % train_prop)
         ensemble_train_prop = float(args[9])

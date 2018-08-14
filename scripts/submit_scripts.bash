@@ -21,5 +21,6 @@ bsub -o /data/zolab/general_ml_pipeline/log/03_create_modeling_data.out -e /data
 bsub -o /data/zolab/general_ml_pipeline/log/04_create_models.out -e /data/zolab/general_ml_pipeline/log/04_create_models.err -q big -R "rusage[mem=60000]" python scripts/04_create_models.py 'full--untested--tested' 'joint_outcome--mace--int' 'joint_outcome--untested_mace--tested_int' 'gbt--lasso--lasso' '/data/zolab/general_ml_pipeline/data/' '/data/zolab/general_ml_pipeline/models/' 'ed_enc_id' 'ptid' '0.05' 'binary_logistic' '0.10' 'auc' '6' '500' '0.75' '1'
 
 # 05_create_ensemble_model
+bsub -o /data/zolab/general_ml_pipeline/log/05_create_ensemble_model.out -e /data/zolab/general_ml_pipeline/log/05_create_ensemble_model.err -q big -R "rusage[mem=10000]" source activate ml_pipeline && python scripts/05_create_ensemble_model.py 'int' 'joint_outcome--untested_mace--tested_int' 'gbt--lasso--lasso' '/data/zolab/general_ml_pipeline/data/' '/data/zolab/general_ml_pipeline/models/' && source deactivate
 
 # 06_post_modeling_analysis

@@ -48,7 +48,7 @@ def subsetAndSave(filename, data_directory, output_directory, unit_id, count_fil
     # ensure correct data types
     non_unit_id_cols = [col for col in dt.columns if col != unit_id]
     dt[unit_id] = dt[unit_id].apply(str)
-    dt[non_unit_id_cols] = dt[non_unit_id_cols].astype('int64')
+    # dt[non_unit_id_cols] = dt[non_unit_id_cols].astype('int64')
 
     # write subset version to file
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(output_directory, filename))
