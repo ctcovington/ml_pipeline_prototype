@@ -4,8 +4,7 @@
 *.log
 scripts/*.Rout
 data
+log
 models
 output
 cohort_data
-python_version/log
-python_version/parquet_files
