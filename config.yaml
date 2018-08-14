@@ -15,7 +15,7 @@ feature_info:
     ecg_filepath: '/data/zolab/stressed_ensemble/data/ecg_feats/ecg_int_hats.rds'
 
     # whether or not you will be using ECG features
-    use_ecg_feats: FALSE
+    use_ecg_feats: 'False'
 
 cohort_info:
     # filepath for cohort -- should contain (at a minimum) identifying information and outcome information, as well as any variables on which we'd like to split for later analysis or model building
@@ -53,10 +53,9 @@ modeling_info:
     model_types: 'gbt--lasso--lasso'
 
     # proportion of 'cluster_id' values we want in training set
-    train_prop: 0.8
+    train_prop: 0.77
 
     # proportion of 'cluster_id' values we want in ensemble training set
-    # NOTE: these are removed from the training set, so if train_prop = 0.8 and ensemble_train_prop = 0.03, we will end up with a true train_prop of 0.77
     ensemble_train_prop: 0.03
 
     # outcome of interest being predicted by ensemble model
