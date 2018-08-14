@@ -1,9 +1,11 @@
+**/.*
+**/__*
 .snakemake
 *.pdf
 *.svg
 *.log
 scripts/*.Rout
-data
+data*
 log
 models
 output
