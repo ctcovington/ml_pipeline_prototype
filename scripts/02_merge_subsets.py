@@ -36,6 +36,15 @@ def main():
     feature_dir = os.path.join(data_dir, '01_final_features') # directory holding files to be merged
     merged_dt = mergeSubsets(data_directory = feature_dir, unit_id = unit_id)
 
+    # Impute missing values. Perform zero imputation for count varianbles, median imputation for non-count variables
+    # NOTE: this was already done before merging together the subset files, but the merge created NaNs
+    # TODO: this is very slow, might be a better way
+    for colname in merged_dt.columns:
+        if colname.split('_t')[0] == colname: # identify whether or not variable name has '_t', our marker for a 'count' variable
+            merged_dt[colname] = merged_dt[colname].fillna(int(merged_dt[colname].median()))
+        else:
+            merged_dt[colname] = merged_dt[colname].fillna(0).astype('int64')
+
     # write merged version to file
     print('write merged data to full_feature_data.parquet')
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(merged_dt), os.path.join(feature_dir, 'full_feature_data.parquet'))

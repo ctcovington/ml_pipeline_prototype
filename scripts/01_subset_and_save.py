@@ -45,12 +45,10 @@ def subsetAndSave(filename, data_directory, output_directory, unit_id, count_fil
     # subset to columns with low missingness
     dt = dt.loc[:, low_miss] # uses boolean values generated in low_miss above to subset columns
 
-    # impute missing values. Perform zero imputation for count files and median imputation for non-count files
-    if file_prefix in count_files:
-        dt.fillna(0)
-    elif file_prefix in non_count_files:
-        for column in dt:
-            dt[column].fillna(dt[column].median())
+    # ensure correct data types
+    non_unit_id_cols = [col for col in dt.columns if col != unit_id]
+    dt[unit_id] = dt[unit_id].apply(str)
+    dt[non_unit_id_cols] = dt[non_unit_id_cols].astype('int64')
 
     # write subset version to file
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(output_directory, filename))
@@ -92,7 +90,10 @@ def main():
 
     # loop over feature files and subset
     raw_feature_dir = os.path.join(data_dir, '00_raw_features')
-    Parallel(n_jobs = len(os.listdir(raw_feature_dir)))(delayed(subsetAndSave)(filename = filename, data_directory = raw_feature_dir, output_directory = subset_dir, unit_id = unit_id, count_files = count_files, non_count_files = non_count_files, missingness_threshold_count = missingness_threshold_count, missingness_threshold_non_count = missingness_threshold_non_count) for filename in os.listdir(raw_feature_dir))
+    for filename in os.listdir(raw_feature_dir):
+        subsetAndSave(filename = filename, data_directory = raw_feature_dir, output_directory = subset_dir, unit_id = unit_id, count_files = count_files, non_count_files = non_count_files, missingness_threshold_count = missingness_threshold_count, missingness_threshold_non_count = missingness_threshold_non_count)
+
+    # Parallel(n_jobs = len(os.listdir(raw_feature_dir)))(delayed(subsetAndSave)(filename = filename, data_directory = raw_feature_dir, output_directory = subset_dir, unit_id = unit_id, count_files = count_files, non_count_files = non_count_files, missingness_threshold_count = missingness_threshold_count, missingness_threshold_non_count = missingness_threshold_non_count) for filename in os.listdir(raw_feature_dir))
 
     return None
 
