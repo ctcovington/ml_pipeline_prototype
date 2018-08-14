@@ -1,17 +1,23 @@
 name: ml_pipeline
 channels:
-    - r
     - conda-forge
     - bioconda
+    # - r
 dependencies:
     - snakemake>=5.2.2
     - python>=3.6.5
     - pyyaml>=3.12 # contains yaml python package
-    - xgboost>=0.71.2
-    - r-base>=3.4.1
-    - r-devtools>=1.13.4
-    - r-data.table>=1.11.4
-    - r-stringr>=1.2.0
-    - r-glmnet>=2.0.5
-    - r-matrix>=1.2.14
-    - r-ggplot2>=2.2.1
+    - pandas>=0.23.0
+    - xgboost>=0.72.1
+    - joblib>=0.12.1
+    - pyarrow>=0.10.0
+    - numpy>=1.14.3
+    - rpy2>=2.9.1
+    - scikit-learn>=0.19.1
+    # - r-base>=3.4.1
+    # - r-devtools>=1.13.4
+    # - r-data.table>=1.11.4
+    # - r-stringr>=1.2.0
+    # - r-glmnet>=2.0.5
+    # - r-matrix>=1.2.14
+    # - r-ggplot2>=2.2.1
