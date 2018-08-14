@@ -85,7 +85,9 @@ rule create_ensemble_model:
     shell:
         """
         rm -rf log/05_*
+        source activate ml_pipeline
         python scripts/05_create_ensemble_model.py {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir} > log/05_create_ensemble_model.out 2>log/05_create_ensemble_model.err
+        source deactivate
         """
 
 rule create_models:
@@ -116,7 +118,9 @@ rule create_models:
     shell:
         """
         rm -rf log/04_*
+        source activate ml_pipeline
         python scripts/04_create_models.py {params.splits} {params.outcomes} {params.names} {params.model_types} {params.data_dir} {params.model_dir} {params.unit_id} {params.cluster_id} {params.learning_rate} {params.obj} {params.scale_pos_weight} {params.eval_metric} {params.max_depth} {params.nround} {params.colsample_bytree} {params.seed} > log/04_create_models.out 2>log/04_create_models.err
+        source deactivate
         """
 
 rule create_modeling_data:
@@ -143,7 +147,9 @@ rule create_modeling_data:
     shell:
         """
         rm -rf log/03_*
+        source activate ml_pipeline
         python scripts/03_create_modeling_data.py {params.cohort_filepath} {params.splits} {params.values} {params.outcomes} {params.names} {params.ecg_filepath} {params.use_ecg_feats} {params.train_prop} {params.ensemble_train_prop} {params.data_dir} {params.unit_id} {params.cluster_id} > log/03_create_modeling_data.out 2>log/03_create_modeling_data.err
+        source deactivate
         """
 
 rule merge_subsets:
@@ -159,7 +165,9 @@ rule merge_subsets:
     shell:
         """
         rm -rf log/02_*
+        source activate ml_pipeline
         python scripts/02_merge_subets.py {params.data_dir} {params.unit_id} > log/02_merge_subsets.out 2>log/02_merge_subsets.err
+        source deactivate
         """
 
 rule subset_save:
@@ -179,7 +187,9 @@ rule subset_save:
     shell:
         """
         rm -rf log/01_*
+        source activate ml_pipeline
         python scripts/01_subset_and_save.py {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count} > log/01_subset_and_save.out 2>log/01_subset_and_save.err
+        source deactivate
         """
 rule csv_to_parquet:
     input:
@@ -192,5 +202,7 @@ rule csv_to_parquet:
     shell:
         """
         rm -rf log/00_*
+        source activate ml_pipeline
         python scripts/00_csv_to_parquet.py {params.feature_dir} {params.data_dir} > log/00_csv_to_parquet.out 2>log/00_csv_to_parquet.err
+        source deactivate
         """
