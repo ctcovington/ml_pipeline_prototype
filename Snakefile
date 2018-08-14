@@ -164,7 +164,7 @@ rule merge_subsets:
         """
         rm -rf log/02_*
         source activate ml_pipeline
-        python scripts/02_merge_subets.py {params.data_dir} {params.unit_id} > log/02_merge_subsets.out 2>log/02_merge_subsets.err
+        python scripts/02_merge_subsets.py {params.data_dir} {params.unit_id} > log/02_merge_subsets.out 2>log/02_merge_subsets.err
         source deactivate
         """
 
