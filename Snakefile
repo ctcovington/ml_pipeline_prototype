@@ -56,8 +56,6 @@ non_stats_feature_files = [file for file in all_feature_files if 'stats' not in 
 # rule post_modeling_analysis:
 #     input:
 #         holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
-#     conda:
-#         'conda_env.yaml'
 #     params:
 #         ensemble_outcome = parameter_values['ensemble_outcome'],
 #         data_dir = parameter_values['data_dir'],
@@ -191,6 +189,7 @@ rule subset_save:
         python scripts/01_subset_and_save.py {params.data_dir} {params.unit_id} {params.count_files} {params.non_count_files} {params.missingness_threshold_count} {params.missingness_threshold_non_count} > log/01_subset_and_save.out 2>log/01_subset_and_save.err
         source deactivate
         """
+
 rule csv_to_parquet:
     input:
         files = expand(os.path.join(parameter_values['feature_dir'], '{file}.csv'), file = non_stats_feature_files)

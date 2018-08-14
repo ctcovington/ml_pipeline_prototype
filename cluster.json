@@ -2,6 +2,7 @@
     "__default__" :
     {
         "queue"     : "big",
+        "name"      : "{rule}",
         "memory"    : 20000,
         "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
     },
