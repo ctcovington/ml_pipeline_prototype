@@ -73,7 +73,7 @@ rule create_ensemble_model:
         ensemble_train_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'ensemble_train_with_predictions.parquet'),
         holdout_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions.parquet')
     output:
-        holdout_with_predictions_including_ensemble_parquet = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+        holdout_with_predictions_including_ensemble_parquet = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet'),
         holdout_with_predictions_including_ensemble_csv = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.csv')
     params:
         ensemble_outcome = parameter_values['ensemble_outcome'],
