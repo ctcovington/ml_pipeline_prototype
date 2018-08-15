@@ -1,0 +1,100 @@
+
+R version 3.4.3 (2017-11-30) -- "Kite-Eating Tree"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Microsoft R Open 3.4.3
+The enhanced R distribution from Microsoft
+Microsoft packages Copyright (C) 2017 Microsoft Corporation
+
+Using the Intel MKL for parallel mathematical computing (using 28 cores).
+
+Default CRAN mirror snapshot taken on 2018-01-01.
+See: https://mran.microsoft.com/.
+
+> source('util.R')
+> 
+> package_list <- list('devtools', 'data.table', 'stringr')
+> 
+> # Load and execute specified libraries
+> load_or_install(package_list)
+ [1] "stringr"       "data.table"    "devtools"      "RevoUtils"    
+ [5] "stats"         "graphics"      "grDevices"     "utils"        
+ [9] "datasets"      "RevoUtilsMath" "methods"       "base"         
+> 
+> ### Read in command line arguments ###
+> arg_len <- 8
+> args <- commandArgs(TRUE)
+> # print(args)
+> if (length(args) != arg_len) {
++     stop(sprintf('Must supply %i arguments -- you provided %i', arg_len, length(args)))
++ } else {
++     file <- as.character(args[1])
++     feature_dir <- as.character(args[2])
++     data_dir <- as.character(args[3])
++     unit_id <- as.character(args[4])
++     count_files <- as.character(args[5])
++     non_count_files <- as.character(args[6])
++     missingness_threshold_count <- as.character(args[7])
++     missingness_threshold_non_count <- as.character(args[8])
++ }
+> 
+> # convert multi-argument arguments to vectors
+> count_files <- str_split(count_files, '--')[[1]]
+> non_count_files <- str_split(non_count_files, '--')[[1]]
+> 
+> raw_subset_dir <- sprintf('%s01_feature_data/', data_dir)
+> dir.create(raw_subset_dir)
+Warning message:
+In dir.create(raw_subset_dir) :
+  '/data/zolab/general_ml_pipeline/data/01_feature_data' already exists
+> 
+> subsetSave <- function(file, feature_dir, data_dir, unit_id, count_files, non_count_files, missingness_threshold_count, missingness_threshold_non_count) {
++     dt <- fread(sprintf('%s%s', feature_dir, file))
++     ed_enc_id_names <- names(dt)[names(dt) %like% unit_id]
++     if (length(ed_enc_id_names) != 1) { # exit script if there is not exactly one variable name in 'dt' containing 'ed_inc_id'
++         cat(sprintf('%s has multiple variable names containing \'%s\'\n', non_stats_files[i], unit_id))
++         quit()
++     }
++     setnames(dt, ed_enc_id_names, unit_id) # standardize ed_enc_id variable name
++ 
++     # subset columns based on missingness
++     n <- nrow(dt) # number of observations
++     prop_missing <- colSums(is.na(dt)) / n # get proportion missing for each
++ 
++     file_prefix <- str_split(file, '_t')[[1]][1] # get beginning of filename up to first '_t', which is our marker for 'time_period' -- this should cover any files that are 'count_files'
++     if (file_prefix == file) {
++         file_prefix <- str_split(file, '_')[[1]][1] # get beginning of filename up to first '_' -- this should cover any files that are 'non_count_files'
++     }
++ 
++     if (file_prefix %in% count_files) {
++         low_miss <- prop_missing < missingness_threshold_count
++     } else if (file_prefix %in% non_count_files) {
++         low_miss <- prop_missing < missingness_threshold_non_count
++     } else {
++         stop('Error: file prefix not included in \'count_files\' or \'non_count_files\'')
++     }
++ 
++     dt <- dt[, (low_miss), with = FALSE] # subset to columns with low missingness
++     fwrite(dt, sprintf('%s%s', raw_subset_dir, file)) # return data table of all features
++ }
+> 
+> subsetSave(file, feature_dir, data_dir, unit_id, count_files, non_count_files, missingness_threshold_count, missingness_threshold_non_count)
+> 
+> proc.time()
+   user  system elapsed 
+  1.137   0.756   1.356 
