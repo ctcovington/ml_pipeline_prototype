@@ -52,6 +52,8 @@ non_stats_feature_files = [file for file in all_feature_files if 'stats' not in 
 rule post_modeling_analysis:
     input:
         holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+    output:
+        roc_plot = os.path.join(parameter_values['output_dir'], 'ensemble_roc.png')
     params:
         ensemble_outcome = parameter_values['ensemble_outcome'],
         data_dir = parameter_values['data_dir'],
@@ -71,7 +73,8 @@ rule create_ensemble_model:
         ensemble_train_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'ensemble_train_with_predictions.parquet'),
         holdout_with_predictions = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions.parquet')
     output:
-        holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+        holdout_with_predictions_including_ensemble_parquet = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+        holdout_with_predictions_including_ensemble_csv = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.csv')
     params:
         ensemble_outcome = parameter_values['ensemble_outcome'],
         names = parameter_values['names'],
