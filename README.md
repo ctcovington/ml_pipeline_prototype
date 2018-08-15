@@ -35,7 +35,7 @@ The pipeline should work for any cohort (presented in a `.csv` file) and feature
 <hr>
 
 ### Prerequisites <a name='Prerequisites'></a>
-Because the pipeline uses conda environments, you will need to install [Anaconda 3](https://www.anaconda.com/download/#linux) beofre running the pipeline. We ask that you get the `python3` version.
+Because the pipeline uses conda environments, you will need to install [Anaconda 3](https://www.anaconda.com/download/#linux) before running the pipeline. We ask that you get the `python3` version.
 
 <hr>
 
