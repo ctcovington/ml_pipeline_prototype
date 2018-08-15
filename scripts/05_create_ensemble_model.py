@@ -36,6 +36,7 @@ def createEnsembleModel(ensemble_outcome, names, model_types, data_dir, model_di
 
     # save holdout data with ensemble predictions
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(holdout_dt), os.path.join(prediction_data_dir, 'holdout_with_predictions_including_ensemble.parquet'))
+    holdout_dt.to_csv(os.path.join(prediction_data_dir, 'holdout_with_predictions_including_ensemble.csv')
 
     return None
 
