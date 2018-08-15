@@ -3,10 +3,6 @@ import os
 import glob
 import yaml
 
-# reset log directory
-os.system('rm -rf log/')
-os.system('mkdir -p log/')
-
 # load configuration file as dictionary
 config = yaml.load(open('config.yaml'))
 
@@ -53,20 +49,22 @@ all_feature_files = [os.path.splitext(os.path.basename(f))[0] for f in glob.glob
 non_stats_feature_files = [file for file in all_feature_files if 'stats' not in file]
 
 ### rules ###
-# rule post_modeling_analysis:
-#     input:
-#         holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
-#     params:
-#         ensemble_outcome = parameter_values['ensemble_outcome'],
-#         data_dir = parameter_values['data_dir'],
-#         output_dir = parameter_values['output_dir'],
-#         ensemble_performance_split = parameter_values['ensemble_performance_split'],
-#         ensemble_performance_split_value = parameter_values['ensemble_performance_split_value']
-#     shell:
-#         """
-#         rm -rf log/06_*
-#         python scripts/06_post_modeling_analysis.py {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value} > log/06_post_modeling_analysis.out 2>log/06_post_modeling_analysis.err
-#         """
+rule post_modeling_analysis:
+    input:
+        holdout_with_predictions_including_ensemble = os.path.join(parameter_values['data_dir'], '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')
+    params:
+        ensemble_outcome = parameter_values['ensemble_outcome'],
+        data_dir = parameter_values['data_dir'],
+        output_dir = parameter_values['output_dir'],
+        ensemble_performance_split = parameter_values['ensemble_performance_split'],
+        ensemble_performance_split_value = parameter_values['ensemble_performance_split_value']
+    shell:
+        """
+        rm -rf log/06_*
+        source activate ml_pipeline
+        python scripts/06_post_modeling_analysis.py {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value} > log/06_post_modeling_analysis.out 2>log/06_post_modeling_analysis.err
+        source deactivate
+        """
 
 rule create_ensemble_model:
     input:
