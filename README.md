@@ -9,6 +9,7 @@ Repository for machine learning pipeline code
 2. [File Structure](#Directory_Structure)
 3. [Data Setup](#Data_Setup)
 4. [Running the Pipeline](#Running_the_Pipeline)
+5. [Common Errors](#Common_Errors)
 
 <hr>
 
@@ -68,3 +69,6 @@ bash run_pipeline.sh
 This will load the appropriate conda environment and run the pipeline (specifically, it will submit batch jobs for each rule defined in `Snakefile`).
 
 <hr>
+
+### Common Errors <a name='Common_Errors'></a>
+- If you get an `IncompleteFilesException`, add the argument `--rerun-incomplete` to the line of `run_pipeline.sh` that executes the snakemake command
