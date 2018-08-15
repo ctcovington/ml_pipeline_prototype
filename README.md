@@ -68,7 +68,9 @@ This snakemake file specifies rules (tasks to be completed) and generally serves
 The file then proceeds to the rules. Each rule inside the snakefile represents a different script from the `scripts` directory, and a different step in the pipeline. Each rule has specified input and output files, parameters to pass to the script when executed, and shell commands to be run. Rules are listed in reverse order of how the pipeline will run (so the rule corresponding to the final script is at the top, and the rule corresponding to the first script is at the bottom). This is because when snakemake reaches a given rule, it checks for existence and creation datetime of that rule's input files. If the input files were updated more recently than the output files, then that rule will run. This ensures that the pipeline is always running exactly the right number of rules to get the most recent version of all files in the pipeline.
 
 #### `scripts/`
-This directory contains all the python code that actually makes up the pipeline. The files are as follows:
+This directory contains all the python code that actually makes up the pipeline. There are two versions of the pipline, represented in the `python` and `R` subdirectories. The python version is the recommended version to use as it is more updated. If Christian has time, he will make sure the R version works as well. 
+
+The python files are as follows:
 - `00_csv_to_parquet.py`
     - takes raw csv feature files and creates parquet versions
 - `01_subset_and_save.py`
