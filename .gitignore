@@ -1,10 +1,12 @@
 **/.*
 **/__*
 .snakemake
+*.pyc
 *.pdf
 *.svg
 *.log
-scripts/*.Rout
+scripts/python/__pycache__
+scripts/R/*.Rout
 data*
 log
 models
