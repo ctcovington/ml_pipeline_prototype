@@ -24,6 +24,7 @@ Once this has been done, there are some things that could be useful for someone 
 - [ ] Add more model diagnostics/analysis
 - [ ] Pipeline currently requires generation of an ensemble model -- could be worthwhile to make this optional
 - [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
+- [ ] python reading command line arguments was done in a non-optimal way -- using [argparse](https://docs.python.org/3/library/argparse.html) probably would have been better
 
 <hr>
 
