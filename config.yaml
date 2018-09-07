@@ -53,10 +53,10 @@ modeling_info:
     model_types: 'gbt--lasso--lasso'
 
     # proportion of 'cluster_id' values we want in training set
-    train_prop: 0.77
+    train_prop: 0.8
 
     # proportion of 'cluster_id' values we want in ensemble training set
-    ensemble_train_prop: 0.03
+    ensemble_train_prop: 0
 
     # outcome of interest being predicted by ensemble model
     ensemble_outcome: 'int'
