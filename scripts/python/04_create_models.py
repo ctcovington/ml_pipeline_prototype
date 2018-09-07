@@ -70,8 +70,8 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
             lasso.fit(train_X, train_Y)
 
             # use lasso to predict outcome in ensemble_train and holdout
-            ensemble_train_predictions = lasso.predict_proba(ensemble_train_X)[:,0]
-            holdout_predictions = lasso.predict_proba(holdout_X)[:,0]
+            ensemble_train_predictions = lasso.predict_proba(ensemble_train_X)[:,1]
+            holdout_predictions = lasso.predict_proba(holdout_X)[:,1]
 
             # add prediction columns and column names to respective lists
             prediction_col_names.append('%s_lasso_prediction' % name)
