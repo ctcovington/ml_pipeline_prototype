@@ -25,8 +25,10 @@ parameter_pairings = {'feature_dir': 'feature_info',
                       'train_prop': 'modeling_info',
                       'ensemble_train_prop': 'modeling_info',
                       'ensemble_outcome': 'modeling_info',
-                      'ensemble_performance_split': 'modeling_info',
-                      'ensemble_performance_split_value': 'modeling_info',
+                      'performance_outcome': 'modeling_info',
+                      'performance_model_name': 'modeling_info',
+                      'performance_split': 'modeling_info',
+                      'performance_split_value': 'modeling_info',
                       'data_dir': 'pipeline_directories',
                       'model_dir': 'pipeline_directories',
                       'output_dir': 'pipeline_directories',
@@ -55,16 +57,17 @@ rule post_modeling_analysis:
     output:
         roc_plot = os.path.join(parameter_values['output_dir'], 'ensemble_roc.png')
     params:
-        ensemble_outcome = parameter_values['ensemble_outcome'],
+        performance_outcome = parameter_values['performance_outcome'],
         data_dir = parameter_values['data_dir'],
         output_dir = parameter_values['output_dir'],
-        ensemble_performance_split = parameter_values['ensemble_performance_split'],
-        ensemble_performance_split_value = parameter_values['ensemble_performance_split_value']
+        performance_model_name = parameter_values['performance_model_name'],
+        performance_split = parameter_values['performance_split'],
+        performance_split_value = parameter_values['performance_split_value']
     shell:
         """
         rm -rf log/06_*
         source activate ml_pipeline
-        python scripts/python/06_post_modeling_analysis.py {params.ensemble_outcome} {params.data_dir} {params.output_dir} {params.ensemble_performance_split} {params.ensemble_performance_split_value} >log/06_post_modeling_analysis.out 2>log/06_post_modeling_analysis.err
+        python scripts/python/06_post_modeling_analysis.py {params.performance_outcome} {params.data_dir} {params.output_dir} {params.performance_model_name} {params.performance_split} {params.performance_split_value} >log/06_post_modeling_analysis.out 2>log/06_post_modeling_analysis.err
         source deactivate
         """
 
@@ -84,9 +87,11 @@ rule create_ensemble_model:
     shell:
         """
         rm -rf log/05_*
-        source activate ml_pipeline
-        python scripts/python/05_create_ensemble_model.py {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir} >log/05_create_ensemble_model.out 2>log/05_create_ensemble_model.err
-        source deactivate
+        if [ -f {params.data_dir}/02_modeling_data/ensemble_train.parquet ]; then
+            source activate ml_pipeline
+            python scripts/python/05_create_ensemble_model.py {params.ensemble_outcome} {params.names} {params.model_types} {params.data_dir} {params.model_dir} >log/05_create_ensemble_model.out 2>log/05_create_ensemble_model.err
+            source deactivate
+        fi
         """
 
 rule create_models:

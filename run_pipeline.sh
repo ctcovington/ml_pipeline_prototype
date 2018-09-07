@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 # create conda environment (if necessary)
 if ! conda info --envs | grep -wq "ml_pipeline"; then

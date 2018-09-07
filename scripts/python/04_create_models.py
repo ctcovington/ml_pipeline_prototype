@@ -36,12 +36,18 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
     ensemble_train_prediction_cols = [] # list to hold prediction lists
     holdout_prediction_cols = [] # list to hold prediction lists
 
+    # set whether or not we will be creating ensemble model
+    create_ensemble = False
+    if 'ensemble_train.parquet' in os.listdir(os.path.join(data_dir, '02_modeling_data')):
+        create_ensemble = True
+
     # for each training set, train the model and predict on the ensemble_train and holdout sets
     for outcome, name, model_type in zip(outcomes, names, model_types):
         # identify data sets
         # NOTE: with a little more though, ensemble_train_dt and holdout_dt could probably be copied outside of the for loop, though this shouldn't that big a deal -- it is not currently being done because extraneous columns are dropped below
         train_dt = dt_dict[name + '_dt'].copy()
-        ensemble_train_dt = dt_dict['ensemble_train_dt'].copy()
+        if create_ensemble:
+            ensemble_train_dt = dt_dict['ensemble_train_dt'].copy()
         holdout_dt = dt_dict['holdout_dt'].copy()
 
         # remove extraneous outcome columns, as well as ID columns
@@ -49,7 +55,8 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
         extra_cols = userutil.flatten([other_outcomes] + [splits] + [unit_id] + [cluster_id])
         remove_cols = [col for col in extra_cols if col in train_dt.columns]
         train_dt.drop(columns = remove_cols, inplace = True)
-        ensemble_train_dt.drop(columns = remove_cols, inplace = True)
+        if create_ensemble:
+            ensemble_train_dt.drop(columns = remove_cols, inplace = True)
         holdout_dt.drop(columns = remove_cols, inplace = True)
 
         # store features and outcome separately
@@ -59,7 +66,8 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
         if 'lasso' in model_type:
             # define data
             train_X = train_dt[feature_cols].values
-            ensemble_train_X = ensemble_train_dt[feature_cols].values
+            if create_ensemble:
+                ensemble_train_X = ensemble_train_dt[feature_cols].values
             holdout_X = holdout_dt[feature_cols].values
             train_Y = train_dt[outcome].values
 
@@ -70,12 +78,14 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
             lasso.fit(train_X, train_Y)
 
             # use lasso to predict outcome in ensemble_train and holdout
-            ensemble_train_predictions = lasso.predict_proba(ensemble_train_X)[:,1]
+            if create_ensemble:
+                ensemble_train_predictions = lasso.predict_proba(ensemble_train_X)[:,1]
             holdout_predictions = lasso.predict_proba(holdout_X)[:,1]
 
             # add prediction columns and column names to respective lists
             prediction_col_names.append('%s_lasso_prediction' % name)
-            ensemble_train_prediction_cols.append(ensemble_train_predictions)
+            if create_ensemble:
+                ensemble_train_prediction_cols.append(ensemble_train_predictions)
             holdout_prediction_cols.append(holdout_predictions)
 
             # save model
@@ -85,7 +95,8 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
         if 'gbt' in model_type:
             # define data
             train_xgb_data = xgboost.DMatrix(data = train_dt[feature_cols], label = train_dt[outcome])
-            ensemble_train_xgb_data = xgboost.DMatrix(data = ensemble_train_dt[feature_cols])
+            if create_ensemble:
+                ensemble_train_xgb_data = xgboost.DMatrix(data = ensemble_train_dt[feature_cols])
             holdout_xgb_data = xgboost.DMatrix(data = holdout_dt[feature_cols])
 
             # define tree parameters
@@ -101,12 +112,14 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
             xgb = xgboost.train(params, train_xgb_data, nround)
 
             # use gradient boosted tree to predict outcome in ensemble_train and holdout
-            ensemble_train_predictions = xgb.predict(ensemble_train_xgb_data)
+            if create_ensemble:
+                ensemble_train_predictions = xgb.predict(ensemble_train_xgb_data)
             holdout_predictions = xgb.predict(holdout_xgb_data)
 
             # add prediction columns and column names to respective lists
             prediction_col_names.append('%s_gbt_prediction' % name)
-            ensemble_train_prediction_cols.append(ensemble_train_predictions)
+            if create_ensemble:
+                ensemble_train_prediction_cols.append(ensemble_train_predictions)
             holdout_prediction_cols.append(holdout_predictions)
 
             # save model
@@ -114,7 +127,8 @@ def makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, mo
 
     # add predictions to ensemble_train and holdout sets
     for name, ensemble_predict, holdout_predict in zip(prediction_col_names, ensemble_train_prediction_cols, holdout_prediction_cols):
-        dt_dict['ensemble_train_dt'][name] = ensemble_predict
+        if create_ensemble:
+            dt_dict['ensemble_train_dt'][name] = ensemble_predict
         dt_dict['holdout_dt'][name] = holdout_predict
 
     # return dictionary of data tables with updated prediction columns in each set
@@ -198,8 +212,15 @@ def main():
     dt_dict = makeAndRunModels(dt_dict, splits, outcomes, names, model_types, data_dir, model_dir, unit_id, cluster_id, learning_rate, obj, scale_pos_weight, eval_metric, max_depth, nround, colsample_bytree, seed)
 
     # save new ensemble_train and holdout data with predictions included
-    pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt_dict['ensemble_train_dt']), os.path.join(prediction_data_dir, 'ensemble_train_with_predictions.parquet'))
+    if create_ensemble:
+        pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt_dict['ensemble_train_dt']), os.path.join(prediction_data_dir, 'ensemble_train_with_predictions.parquet'))
+        dt_dict['ensemble_train_dt'].to_csv(os.path.join(prediction_data_dir, 'ensemble_train_with_predictions.parquet'))
+    else:
+        with open(os.path.join(prediction_data_dir, 'ensemble_train_with_predictions.parquet')) as f:
+            f.write('')
+
     pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt_dict['holdout_dt']), os.path.join(prediction_data_dir, 'holdout_with_predictions.parquet'))
+    dt_dict['holdout_dt'].to_csv(os.path.join(prediction_data_dir, 'holdout_with_predictions.parquet'))
 
     return None
 

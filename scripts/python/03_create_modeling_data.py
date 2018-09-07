@@ -103,6 +103,9 @@ def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, 
         if len(ensemble_train_vals) > 0: # if we have ensemble train values
             print('saving ensemble train set')
             pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(ensemble_train_vals)]), os.path.join(modeling_data_dir, 'ensemble_train.parquet')) # create ensemble train set
+        else:
+            with open(os.path.join(modeling_data_dir, 'ensemble_train.parquet')) as f:
+                f.write('')
         print('saving holdout set')
         pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
 
