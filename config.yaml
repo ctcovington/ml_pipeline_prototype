@@ -11,7 +11,7 @@ feature_info:
     missingness_threshold_count: 0.01
     missingness_threshold_non_count: 0.01
 
-    # filepath to ECG features -- can be left blank if you don't want to use ECG features
+    # filepath to ECG features -- can be left blank if you don't want to use ECG features, but do not delete
     ecg_filepath: '/data/zolab/stressed_ensemble/data/ecg_feats/ecg_int_hats.rds'
 
     # whether or not you will be using ECG features
