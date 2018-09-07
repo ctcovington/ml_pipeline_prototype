@@ -35,7 +35,7 @@ modeling_info:
     splits: 'full--untested--tested'
 
     # values for split to which we want to subset (for this example, we split into 'untested == 1' and 'tested == 1')
-    # NOTE: must be numeric
+    # NOTE: for now, these must be '1' because dropping into the lasso predictions array requires it
     # NOTE: can give any value when split == 'full' (should still be numeric though)
     # NOTE: values should be separated by '--'
     values: '0--1--1'
