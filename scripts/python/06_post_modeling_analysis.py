@@ -61,7 +61,8 @@ def main():
         holdout_dt = pyarrow.parquet.read_table(os.path.join(data_dir, '03_data_with_predictions', 'holdout_with_predictions_including_ensemble.parquet')).to_pandas()
 
     # subset data to portion on which we will evaluate model
-    holdout_dt.drop(holdout_dt[holdout_dt[performance_split] != performance_split_value].index, inplace=True)
+    if performance_split != 'full':
+        holdout_dt.drop(holdout_dt[holdout_dt[performance_split] != performance_split_value].index, inplace=True)
 
     # create ROC curve
     outputROC(dt = holdout_dt, prediction_col_name = '%s_ensemble_prediction' % performance_outcome, outcome_col_name = performance_outcome, output_dir = output_dir)
