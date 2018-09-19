@@ -26,6 +26,8 @@ Once this has been done, there are some things that could be useful for someone 
 - [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
 - [ ] python reading command line arguments was done in a non-optimal way -- using [argparse](https://docs.python.org/3/library/argparse.html) probably would have been better
 
+Note that the pipeline was originally written in R and then ported to python. The R version of the scripts still exist (and are listed in their own directory), but they have not been updated with recent changes to the pipeline. They could be useful for someone at some point, but they should not be seen as an exact match for the current state of the python code.
+
 <hr>
 
 ### Project Overview <a name='Project_Overview'></a>
@@ -125,7 +127,7 @@ If you would like to see the jobs that need to be run in order for you to be com
 snakemake -np
 ```
 
-This will perform a dry-run of the pipeline and let you know what needs to be done. 
+This will perform a dry-run of the pipeline and let you know what needs to be done.
 
 <hr>
 
@@ -135,4 +137,6 @@ This will perform a dry-run of the pipeline and let you know what needs to be do
 <hr>
 
 ### Getting Help <a name='Getting_Help'></a>
-As of 8.15.18, Christian Covington is the primary author of the pipeline and is likely the best source for answering any questions you have. Christian can be reached at by email at `christian.t.covington@gmail.com` and his gitlab handle is `ctcovington`.
+On 9.18.18, Shane Conner took over the project and will likely be the point person moving forward.
+
+Christian Covington was the original author of the pipeline and is likely the best source for answering questions that Shane cannot (particularly while Shane learns the pipeline) and is definitely the best person to curse/blame when things go wrong. Christian can be reached at by email at `christian.t.covington@gmail.com` and his gitlab handle is `ctcovington`.
