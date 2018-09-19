@@ -22,9 +22,8 @@ Once this has been done, there are some things that could be useful for someone 
 - [ ] ecg file appears to have extraneous columns we wouldn't want in the model (`ecg_file`, `ecg_meta_file`, `npy_index`) -- these are removed in the python version, but we should make sure that this is correct -- additionally, ecg file has at least one variable (`Remarks`) that is a string, and this will not be usable by our ml models
 - [ ] Add various capabilities/details to training set generation (e.g. allow for up/downsampling of some group)
 - [ ] Add more model diagnostics/analysis
-- [ ] Pipeline currently requires generation of an ensemble model -- could be worthwhile to make this optional
 - [ ] `run_pipeline.sh` and `cluster.json` are both currently configured for running on lsf clusters only -- this should be generalized (particularly if we move to the cloud)
-- [ ] python reading command line arguments was done in a non-optimal way -- using [argparse](https://docs.python.org/3/library/argparse.html) probably would have been better
+- [ ] python reads command line arguments in a non-optimal way -- using [argparse](https://docs.python.org/3/library/argparse.html) probably would have been better
 
 Note that the pipeline was originally written in R and then ported to python. The R version of the scripts still exist (and are listed in their own directory), but they have not been updated with recent changes to the pipeline. They could be useful for someone at some point, but they should not be seen as an exact match for the current state of the python code.
 
