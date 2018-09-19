@@ -35,12 +35,12 @@ modeling_info:
     splits: 'full--untested--tested'
 
     # values for split to which we want to subset (for this example, we split into 'untested == 1' and 'tested == 1')
-    # NOTE: for now, these must be '1' because dropping into the lasso predictions array requires it
     # NOTE: can give any value when split == 'full' (should still be numeric though)
     # NOTE: values should be separated by '--'
     values: '0--1--1'
 
     # outcome of interest in each model
+    # these should all be binary variables and the predictions returned from the models will be P(outcome == 1)
     # NOTE: outcomes should be separated by '--'
     outcomes: 'joint_outcome--mace--int'
 
@@ -70,6 +70,7 @@ modeling_info:
 
     # variable identifying subset on which we want to assess model performance
     # NOTE: this will likely be the largest sample on which the outcome is defined
+    # NOTE: as for the other split variable, use 'full' if you want
     performance_split: 'tested'
 
     # value for performance_split
