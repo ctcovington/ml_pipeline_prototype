@@ -74,7 +74,7 @@ def loadAndAppendCohortInfo(feature_dt, cohort_filepath, splits, values, outcome
     # return feature data with outcomes merged on
     return feature_dt
 
-def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, values, outcomes, names, data_dir, cluster_id):
+def splitTrainEnsembleTrainHoldout(dt, train_holdout_split_var, train_split_vals, ensemble_train_split_vals, holdout_split_vals, train_prop, ensemble_train_prop, splits, values, outcomes, names, data_dir, cluster_id):
         print('### splitting data into train, ensemble train, and holdout sets ###')
         # define modeling data directory and reset it (delete directory and files, then remake)
         modeling_data_dir = os.path.join(data_dir, '02_modeling_data')
@@ -82,54 +82,77 @@ def splitTrainEnsembleTrainHoldout(dt, train_prop, ensemble_train_prop, splits, 
             shutil.rmtree(modeling_data_dir)
         os.mkdir(modeling_data_dir)
 
-        # generate list of unique cluster_id values -- we use this to define train, ensemble_train, and holdout sets
-        unique_cluster_id = list(set(dt[cluster_id]))
-        n = len(unique_cluster_id)
+        # check if train/holdout split is deterministic -- then split either on deterministic values or via sampling
+        if train_holdout_split_var == 'None':
+            # generate list of unique cluster_id values -- we use this to define train, ensemble_train, and holdout sets
+            unique_cluster_id = list(set(dt[cluster_id]))
+            n = len(unique_cluster_id)
 
-        # calculate appropriate number of unique cluster_id for each set
-        train_size = math.floor(train_prop * n)
-        ensemble_train_size = math.floor(ensemble_train_prop * n)
-        holdout_size = n - train_size - ensemble_train_size
+            # calculate appropriate number of unique cluster_id for each set
+            train_size = math.floor(train_prop * n)
+            ensemble_train_size = math.floor(ensemble_train_prop * n)
+            holdout_size = n - train_size - ensemble_train_size
 
-        # create sets of unique values of 'cluster_id' we want to include in each set
-        # TODO: these are pretty slow -- could maybe be sped up by sorting lists as we go and doing binary search -- not sure how this works within a list comprehension
-        print('splitting %s into sets of values needed to define each set' % cluster_id)
-        train_vals = numpy.random.choice(unique_cluster_id, size = train_size, replace = True) # sample from full set of cluster ids
-        unique_cluster_id = [id for id in unique_cluster_id if id not in train_vals] # remove all values sampled into training set from list of cluster ids
-        ensemble_train_vals = numpy.random.choice(unique_cluster_id, size = ensemble_train_size, replace = True) # sample from restricted set of cluster ids
-        holdout_vals = numpy.asarray([id for id in unique_cluster_id if id not in ensemble_train_vals]) # remove all values sampled into ensemble training set and assign remaining values to holdout set
+            # create sets of unique values of 'cluster_id' we want to include in each set
+            # TODO: these are pretty slow -- could maybe be sped up by sorting lists as we go and doing binary search -- not sure how this works within a list comprehension
+            print('splitting %s into sets of values needed to define each set' % cluster_id)
+            train_vals = numpy.random.choice(unique_cluster_id, size = train_size, replace = True) # sample from full set of cluster ids
+            unique_cluster_id = [id for id in unique_cluster_id if id not in train_vals] # remove all values sampled into training set from list of cluster ids
+            ensemble_train_vals = numpy.random.choice(unique_cluster_id, size = ensemble_train_size, replace = True) # sample from restricted set of cluster ids
+            holdout_vals = numpy.asarray([id for id in unique_cluster_id if id not in ensemble_train_vals]) # remove all values sampled into ensemble training set and assign remaining values to holdout set
 
-        # create ensemble_train and holdout sets
-        if len(ensemble_train_vals) > 0: # if we have ensemble train values
-            print('saving ensemble train set')
-            pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(ensemble_train_vals)]), os.path.join(modeling_data_dir, 'ensemble_train.parquet')) # create ensemble train set
-        else:
-            with open(os.path.join(modeling_data_dir, 'ensemble_train.parquet')) as f:
-                f.write('')
-        print('saving holdout set')
-        pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
-
-        # create training set and split it into its component pieces
-        dt.drop(dt[dt[cluster_id].isin(numpy.concatenate([ensemble_train_vals, holdout_vals]))].index, inplace = True) # drop ensemble_train and holdout observations
-
-        for split, value, name in zip(splits, values, names):
-            if split == 'full':
-                print('saving full training set')
-                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+            # create ensemble_train and holdout sets
+            if len(ensemble_train_vals) > 0: # if we have ensemble train values
+                print('saving ensemble train set')
+                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(ensemble_train_vals)]), os.path.join(modeling_data_dir, 'ensemble_train.parquet')) # create ensemble train set
             else:
-                print('saving %s training set' % name)
-                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[split] == value]), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+                with open(os.path.join(modeling_data_dir, 'ensemble_train.parquet'), 'w+') as f:
+                    f.write('')
+            print('saving holdout set')
+            pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[cluster_id].isin(holdout_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
+
+            # create training set and split it into its component pieces
+            dt.drop(dt[dt[cluster_id].isin(numpy.concatenate([ensemble_train_vals, holdout_vals]))].index, inplace = True) # drop ensemble_train and holdout observations
+
+            for split, value, name in zip(splits, values, names):
+                if split == 'full':
+                    print('saving full training set')
+                    pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+                else:
+                    print('saving %s training set' % name)
+                    pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[split] == value]), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+        else:
+            # create training sets
+            for split, value, name in zip(splits, values, names):
+                if split == 'full':
+                    print('saving full training set')
+                    pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[train_holdout_split_var].isin(train_split_vals)]), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+                else:
+                    print('saving %s training set' % name)
+                    pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[split] == value & dt[train_holdout_split_var].isin(train_split_vals)]), os.path.join(modeling_data_dir, 'train_%s.parquet' % name))
+
+            # create ensemble training set
+            if len(ensemble_train_split_vals) > 0: # if we have ensemble train values
+                print('saving ensemble train set')
+                pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[train_holdout_split_var].isin(ensemble_train_split_vals)]), os.path.join(modeling_data_dir, 'ensemble_train.parquet')) # create ensemble train set
+            else:
+                with open(os.path.join(modeling_data_dir, 'ensemble_train.parquet'), 'w+') as f:
+                    f.write('')
+
+            # create holdout set
+            print('saving holdout set')
+            pyarrow.parquet.write_table(pyarrow.Table.from_pandas(dt.loc[dt[train_holdout_split_var].isin(holdout_split_vals)]), os.path.join(modeling_data_dir, 'holdout.parquet')) # create holdout set
 
         return None
 
 # define main
 def main():
     # accept and manage command line arguments
-    arg_len = 12 # number of expected arguments
+    arg_len = 16 # number of expected arguments
     args = sys.argv # read in arguments
 
     if (len(args) - 1) != arg_len: # args also includes script name as argument, so subtract 1
-        sys.stderr.write('Must supply %i arguments -- you provided %i' % arg_len, (len(args) - 1))
+        sys.stderr.write('Must supply %i arguments -- you provided %i' % (arg_len, (len(args) - 1)))
         sys.exit()
     else:
         cohort_filepath = str(args[1])
@@ -146,15 +169,23 @@ def main():
         print('ecg_filepath: %s' % ecg_filepath)
         use_ecg_feats = str(args[7])
         print('use_ecg_feats: %s' % use_ecg_feats)
-        train_prop = float(args[8])
+        train_holdout_split_var = str(args[8])
+        print('train_holdout_split_var: %s' % train_holdout_split_var)
+        train_split_vals = str(args[9])
+        print('train_split_vals: %s' % train_split_vals)
+        ensemble_train_split_vals = str(args[10])
+        print('ensemble_train_split_vals: %s' % ensemble_train_split_vals)
+        holdout_split_vals = str(args[11])
+        print('holdout_split_vals: %s' % holdout_split_vals)
+        train_prop = float(args[12])
         print('train_prop: %s' % train_prop)
-        ensemble_train_prop = float(args[9])
+        ensemble_train_prop = float(args[13])
         print('ensemble_train_prop: %s' % ensemble_train_prop)
-        data_dir = str(args[10])
+        data_dir = str(args[14])
         print('data_dir: %s' % data_dir)
-        unit_id = str(args[11])
+        unit_id = str(args[15])
         print('unit_id: %s' % unit_id)
-        cluster_id = str(args[12])
+        cluster_id = str(args[16])
         print('cluster_id: %s' % cluster_id)
 
         # convert use_ecg_feats to bool
@@ -165,6 +196,10 @@ def main():
         values = [int(value) for value in values.split('--')]
         outcomes = outcomes.split('--')
         names = names.split('--')
+
+        train_split_vals = train_split_vals.split('--')
+        ensemble_train_split_vals = ensemble_train_split_vals.split('--')
+        holdout_split_vals = holdout_split_vals.split('--')
 
         #  get number of arguments in each multi-argument arguments
         a = len(splits)
@@ -186,7 +221,7 @@ def main():
 
     # split data into different sets (train, ensemble_train, and holdout)
     print('split into various sets')
-    splitTrainEnsembleTrainHoldout(full_dt, train_prop, ensemble_train_prop, splits, values, outcomes, names, data_dir, cluster_id)
+    splitTrainEnsembleTrainHoldout(full_dt, train_holdout_split_var, train_split_vals, ensemble_train_split_vals, holdout_split_vals, train_prop, ensemble_train_prop, splits, values, outcomes, names, data_dir, cluster_id)
 
     return None
 
