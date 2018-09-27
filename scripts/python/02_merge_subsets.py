@@ -36,7 +36,7 @@ def main():
     feature_dir = os.path.join(data_dir, '01_final_features') # directory holding files to be merged
     merged_dt = mergeSubsets(data_directory = feature_dir, unit_id = unit_id)
 
-    # Impute missing values. Perform zero imputation for count varianbles, median imputation for non-count variables
+    # Impute missing values. Perform median imputation for count varianbles, 0 imputation for non-count variables
     # NOTE: this was already done before merging together the subset files, but the merge created NaNs
     # TODO: this is very slow, might be a better way
     for colname in merged_dt.columns:
