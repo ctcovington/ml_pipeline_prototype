@@ -41,9 +41,9 @@ def main():
     # TODO: this is very slow, might be a better way
     for colname in merged_dt.columns:
         if colname.split('_t')[0] == colname: # identify whether or not variable name has '_t', our marker for a 'count' variable
-            merged_dt[colname] = merged_dt[colname].fillna(int(merged_dt[colname].median()))
-        else:
             merged_dt[colname] = merged_dt[colname].fillna(0).astype('int64')
+        else:
+            merged_dt[colname] = merged_dt[colname].fillna(int(merged_dt[colname].median()))
 
     # write merged version to file
     print('write merged data to full_feature_data.parquet')
